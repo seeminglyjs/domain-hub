@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>지식 노트 색인</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* 배치: 쌓인 개념 풀이를 분류(도메인 · 기술 → 분야)별로 한 페이지에 모은다. 제목만 보이고 누르면 본문이 펼쳐진다. 아래에 용어 색인 */
+:root {
+  --bg: #f7f6f3; --surface: #ffffff; --fg: #1c1b19; --muted: #615f59; --line: #e4e1da;
+  --accent: #2f5fb3; --domain: #0f7c74; --tech: #5a4bc2; --chip-bg: #efede8; --code-bg: #f1efe9;
+  --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #131416; --surface: #1b1c1f; --fg: #e9e7e2; --muted: #a09d96; --line: #2c2d31;
+    --accent: #8fb0ff; --domain: #4fd1c5; --tech: #a99cff; --chip-bg: #26272b; --code-bg: #222327; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #131416; --surface: #1b1c1f; --fg: #e9e7e2; --muted: #a09d96; --line: #2c2d31;
+  --accent: #8fb0ff; --domain: #4fd1c5; --tech: #a99cff; --chip-bg: #26272b; --code-bg: #222327; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.7 var(--font-body); padding: 0 16px; word-break: keep-all; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-block: 40px 64px; display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 32px 40px; align-items: start; }
+header { grid-column: 1 / -1; display: grid; gap: 10px; }
+a { color: var(--accent); text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.eyebrow { font: 500 12px/1 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+h1 { margin: 0; font-size: clamp(26px, 5vw, 36px); line-height: 1.2; font-weight: 700; letter-spacing: -.02em; }
+.sub { color: var(--muted); font-size: 14px; }
+.tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 4px; }
+.tools input { flex: 1 1 260px; min-width: 0; font: 15px var(--font-body); padding: 9px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--fg); }
+.tools button { font: 500 13px var(--font-body); padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; }
+.result-note { font-size: 13px; color: var(--muted); }
+
+/* 왼쪽 분류 목록 */
+nav.cats { position: sticky; top: 16px; display: grid; gap: 18px; font-size: 14px; max-height: calc(100vh - 32px); overflow-y: auto; }
+nav.cats h2 { margin: 0 0 6px; font-size: 12px; font-weight: 700; letter-spacing: .08em; color: var(--c); }
+nav.cats ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+nav.cats a { display: flex; justify-content: space-between; gap: 8px; padding: 3px 8px; border-radius: 6px; color: var(--fg); text-decoration: none; }
+nav.cats a:hover { background: var(--chip-bg); }
+nav.cats a .n { font: 12px var(--font-mono); color: var(--muted); }
+nav.cats li.zero a { color: var(--muted); cursor: default; }
+nav.cats li.zero a:hover { background: transparent; }
+
+main { display: grid; gap: 40px; min-width: 0; }
+.track > h2 { margin: 0 0 4px; font-size: 22px; font-weight: 700; color: var(--c); }
+.track > .note { margin: 0 0 18px; color: var(--muted); font-size: 13px; }
+.area { margin-bottom: 26px; scroll-margin-top: 16px; }
+.area h3 { margin: 0 0 8px; padding-bottom: 6px; font-size: 16px; font-weight: 700; border-bottom: 2px solid var(--c); display: flex; gap: 8px; align-items: baseline; }
+.area h3 .n { font: 13px var(--font-mono); color: var(--muted); font-weight: 400; }
+.none { margin: 0; padding: 8px 0; color: var(--muted); font-size: 13px; }
+
+details.concept { border-bottom: 1px solid var(--line); scroll-margin-top: 16px; }
+details.concept > summary { list-style: none; cursor: pointer; padding: 12px 0; display: grid; grid-template-columns: 1fr auto; gap: 2px 16px; }
+details.concept > summary::-webkit-details-marker { display: none; }
+summary .t { font-weight: 600; font-size: 16px; line-height: 1.5; }
+summary .t::before { content: "▸ "; color: var(--c); }
+details[open] > summary .t::before { content: "▾ "; }
+summary .d { font: 12px var(--font-mono); color: var(--muted); white-space: nowrap; }
+summary .o { grid-column: 1 / -1; color: var(--muted); font-size: 14px; line-height: 1.65; }
+.cbody { display: grid; gap: 16px; padding: 4px 0 24px; }
+.csec { display: grid; gap: 6px; }
+.csec h4 { margin: 0; font-size: 15px; font-weight: 700; }
+.csec h4 .n { font: 500 12px var(--font-mono); color: var(--c); margin-right: 8px; }
+.csec p { margin: 0; line-height: 1.85; max-width: 70ch; overflow-wrap: anywhere; }
+.csec p + p { margin-top: 8px; }
+.related { margin: 0; font-size: 13px; color: var(--muted); }
+.related::before { content: "그 주 소식과 연결 · "; font-weight: 600; color: var(--fg); }
+pre.code { margin: 6px 0 0; padding: 14px 16px; border-radius: 8px; background: var(--code-bg); font: 13px/1.6 var(--font-mono); overflow-x: auto; }
+.code-note { font-size: 12px; color: var(--muted); }
+.glossary { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; padding: 14px 16px; border-radius: 8px; background: var(--chip-bg); font-size: 14px; }
+.glossary dt { font-weight: 600; }
+.glossary dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.refs { margin: 0; padding-left: 18px; font-size: 13px; color: var(--muted); }
+.refs a { overflow-wrap: anywhere; }
+.from { font-size: 13px; color: var(--muted); }
+
+/* 용어 색인 */
+#terms h2, #reports h2 { margin: 0 0 12px; font-size: 22px; font-weight: 700; }
+.terms { margin: 0; display: grid; grid-template-columns: minmax(160px, max-content) 1fr; gap: 0; }
+.terms dt, .terms dd { padding: 8px 0; border-bottom: 1px solid var(--line); margin: 0; }
+.terms dt { font-weight: 600; padding-right: 16px; }
+.terms dd { min-width: 0; overflow-wrap: anywhere; }
+.terms dd .src { display: block; font-size: 12px; }
+.reports { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.reports a { display: inline-block; padding: 5px 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); font: 13px var(--font-mono); text-decoration: none; color: var(--fg); }
+.nodata { padding: 40px 0; color: var(--muted); }
+
+@media (max-width: 760px) {
+  .wrap { grid-template-columns: 1fr; padding-block: 24px 48px; }
+  nav.cats { position: static; max-height: none; grid-template-columns: 1fr 1fr; }
+  .terms, .glossary { grid-template-columns: 1fr; }
+  .terms dt { border-bottom: 0; padding-bottom: 0; }
+}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <p class="nodata">색인 데이터가 없습니다.</p>
+</div>
+
+<!-- 루틴은 아래 JSON 한 덩어리만 바꿔 넣는다. 그 밖의 줄은 고치지 않는다. -->
+<script id="library-data" type="application/json">{"updatedOn": "2026-11-10", "concepts": [{"id": "2026-11-10-tech", "date": "2026-11-10", "track": "tech", "area": "과부하", "slug": "cache-stampede", "title": "캐시 스탬피드(Cache Stampede) — 만료 순간 몰리는 재계산 막기", "oneLine": "캐시 항목이 만료되는 순간 많은 요청이 동시에 같은 값을 다시 계산하면서 DB 같은 공유 자원이 과부하에 빠지는 현상입니다. 도그파일링(dog-piling)이라고도 부릅니다.", "related": "이번 주 Next.js 보안 패치 가운데 하나는 캐시가 비어 있는 상태에서 동시에 들어온 호출이 결과를 잘못 공유한 문제여서, 캐시를 채우는 순간의 동시성을 다룬다는 점에서 이어집니다.", "path": "notes/tech/overload/2026-11-10-cache-stampede.md", "report": "reports/2026-11-10.html", "sections": [{"heading": "왜 필요한가", "body": "캐시는 무거운 계산 결과를 잠시 저장해 DB 부하를 줄이는 장치입니다. 문제는 자주 읽히는 항목 하나가 만료되는 순간에 생깁니다. 그 순간 들어온 요청은 모두 캐시 미스(Cache Miss, 캐시에 값이 없음)를 보고 각자 DB 에 같은 조회를 보냅니다.\n평소 캐시가 막아 주던 부하가 한꺼번에 DB 로 넘어가면 응답이 느려집니다. 응답이 느려질수록 재계산이 더 많이 겹치고, 캐시가 다시 채워지지 않는 상태가 이어질 수 있습니다. 위키백과는 이 상태를 캐시 적중률이 0 으로 떨어지고 시스템이 계속 과부하에 머무는 연쇄 장애로 설명합니다."}, {"heading": "동작 원리", "body": "동시에 겹치는 재계산 수는 대략 재계산에 걸리는 시간과 초당 요청 수를 곱한 값입니다. 위키백과의 예시 수치로는 렌더링에 3초가 걸리고 초당 10건이 들어올 때 약 30개 프로세스가 같은 페이지를 동시에 다시 만듭니다.\n막는 방법은 세 가지로 나뉩니다. 첫째는 락(Lock, 한 번에 하나만 들어가게 하는 잠금)으로, 캐시 미스가 난 요청 가운데 락을 얻은 하나만 재계산하고 나머지는 기다리거나 오래된 값을 씁니다. 둘째는 외부 재계산(External Recomputation)으로, 요청을 처리하는 프로세스 대신 별도 작업이 만료 전에 값을 다시 채웁니다.\n셋째는 확률적 조기 만료(Probabilistic Early Expiration)입니다. 각 요청이 만료 시각에 가까워질수록 높아지는 확률로 미리 재계산할지 스스로 정하므로, 재계산 시점이 흩어집니다. Vattani 등의 2015년 VLDB(데이터베이스 분야 국제 학회) 논문이 이 방식을 다루며, 위키백과는 매개변수 beta 를 1 로 두어도 실제로 잘 동작한다고 적습니다."}, {"heading": "예시 장면", "body": "아래는 설명을 위한 가상 장면이며, 수치는 모두 예시 수치입니다. 공개된 사후 분석 사례는 이번 회차에 확인하지 못했습니다.\n10:00:00 에 쇼핑몰 관리 화면이 읽는 '오늘 상품별 매출 요약' 캐시가 만료됩니다. 이 요약을 만드는 집계 쿼리는 2초가 걸리고, 화면 요청은 초당 50건 들어옵니다.\n10:00:00~10:00:02 사이에 약 100건의 요청이 각자 같은 집계 쿼리를 DB 로 보냅니다. 서버의 DB 커넥션 풀(Connection Pool)은 10개뿐이어서 나머지 요청은 커넥션을 기다립니다.\n같은 풀을 쓰는 다른 API 도 커넥션을 얻지 못해 타임아웃이 납니다. 락이나 미리 채우기가 있었다면 집계 쿼리는 한 번만 돌고, 나머지 요청은 2초 뒤 같은 결과를 받았을 것입니다."}, {"heading": "실무에서 확인할 점", "body": "Spring 의 @Cacheable(메서드 결과를 캐시에 저장하게 하는 애너테이션)에는 sync 속성이 있습니다. 공식 문서는 sync=true 이면 값을 계산하는 동안 캐시 공급자(Cache Provider, 값을 실제로 저장하는 캐시 구현체)가 그 항목을 잠그고, 한 스레드만 계산하며 나머지는 기다린다고 설명합니다.\n서버를 여러 대 띄우는 서비스라면 이 잠금이 어디까지 미치는지 확인합니다. 문서는 잠금을 캐시 공급자에 맡긴다고만 적으므로, 서버마다 따로 두는 메모리 캐시라면 서버 수만큼 재계산이 일어날 수 있습니다. Redis(메모리 기반 키-값 저장소) 같은 공유 캐시를 쓴다면 그 공급자의 문서에서 여러 서버 사이의 동시 재계산을 막는지 확인합니다.\n무거운 요약 값은 요청이 아니라 정기 작업(스케줄러)이 미리 채우는 외부 재계산 방식이 맞는지도 검토할 수 있습니다. 같은 TTL(Time To Live, 만료 시간)로 한꺼번에 만료되는 키 묶음이 있는지도 함께 봅니다.", "code": {"text": "@Cacheable(cacheNames=\"foos\", sync=true)\npublic Foo executeExpensiveOperation(String id) {...}", "note": "Spring Framework 참조 문서 'Declarative Annotation-based Caching' 의 Synchronized Caching 예시입니다."}}, {"heading": "흔한 함정", "body": "첫째, 락만 걸고 락을 잡은 프로세스가 죽는 경우를 대비하지 않으면 다른 요청이 계속 기다립니다. 위키백과는 락 보유자 장애 · 락 TTL 설정 · 경쟁 상태(Race Condition, 실행 순서에 따라 결과가 달라지는 상태)를 올바르게 다루기 어렵다고 지적합니다.\n둘째, 외부 재계산을 모든 키에 쓰려고 하면 맞지 않습니다. 이 방식은 고정된 키에 맞고, 상품 ID 처럼 요청마다 달라지는 키에는 잘 맞지 않습니다.\n셋째, 확률적 조기 만료는 재계산 소요 시간과 만료 시각을 캐시 항목과 함께 저장해야 하므로 메모리 사용량이 늘어납니다. 이 비용을 계산하지 않고 모든 캐시에 적용하면 캐시 용량이 부족해질 수 있습니다."}], "glossary": [{"term": "캐시 미스(Cache Miss)", "meaning": "요청한 값이 캐시에 없어 원래 저장소에서 다시 읽거나 계산해야 하는 상황입니다."}, {"term": "TTL(Time To Live)", "meaning": "캐시 항목이 저장된 뒤 만료될 때까지의 시간입니다."}, {"term": "도그파일링(Dog-piling)", "meaning": "캐시 스탬피드의 다른 이름으로, 여러 요청이 한 자원에 한꺼번에 몰리는 모습을 가리킵니다."}, {"term": "커넥션 풀(Connection Pool)", "meaning": "DB 연결을 미리 몇 개 열어 두고 요청마다 빌려 쓰는 구조로, 개수가 정해져 있어 다 쓰이면 나머지 요청이 기다립니다."}, {"term": "확률적 조기 만료(Probabilistic Early Expiration)", "meaning": "만료 시각에 가까울수록 높아지는 확률로 각 요청이 미리 재계산할지 정하게 해 재계산 시점을 흩어 놓는 방법입니다."}, {"term": "@Cacheable", "meaning": "Spring 에서 메서드 결과를 캐시에 저장하고 다음 호출에 저장된 값을 돌려주게 하는 애너테이션입니다."}, {"term": "VLDB(Very Large Data Bases)", "meaning": "데이터베이스 분야의 국제 학회로, 이 글의 확률적 조기 만료 논문이 실린 곳입니다."}], "sources": [{"label": "위키백과: Cache stampede", "url": "https://en.wikipedia.org/wiki/Cache_stampede"}, {"label": "Spring Framework 문서: 캐시 애너테이션(sync)", "url": "https://docs.spring.io/spring-framework/reference/integration/cache/annotations.html"}, {"label": "Vattani 외, Optimal Probabilistic Cache Stampede Prevention (VLDB 2015, PDF)", "url": "https://www.vldb.org/pvldb/vol8/p886-vattani.pdf"}]}, {"id": "2026-11-10-domain", "date": "2026-11-10", "track": "domain", "area": "시맨틱 레이어", "slug": "semantic-layer", "title": "시맨틱 레이어(Semantic Layer) — 지표 정의를 한 곳에 두기", "oneLine": "매출 같은 업무 지표를 어떤 테이블에서 어떻게 조인 · 집계하는지 한 곳에 정의하고, 화면 · 보고서 · AI 에이전트가 모두 그 정의를 불러 쓰게 하는 계층입니다.", "related": "이번 주 Snowflake 가 발표한 Business Ontology 는 지표의 의미와 계산을 나눠 맡기는 구조여서, 시맨틱 레이어가 어디까지 맡는지 보여 주는 사례입니다.", "path": "notes/domain/semantic-layer/2026-11-10-semantic-layer.md", "report": "reports/2026-11-10.html", "sections": [{"heading": "왜 필요한가", "body": "매출 같은 지표의 계산 규칙이 BI 도구(Business Intelligence, 대시보드와 보고서를 만드는 도구, 예: Tableau · Looker)마다 따로 있으면, 사업부마다 같은 매출(revenue)을 다르게 계산하게 됩니다. dbt(SQL 로 데이터 웨어하우스 안의 데이터를 가공 · 관리하는 오픈소스 도구) 문서도 이 문제를 시맨틱 레이어가 필요한 이유로 듭니다. 같은 이름의 숫자가 화면마다 다르면 보는 사람은 어느 숫자도 믿지 않게 됩니다.\n예를 들어 매출 대시보드는 환불을 뺀 금액을 쓰고 월간 보고서는 환불을 넣은 금액을 쓰면, 보는 사람은 두 숫자가 왜 다른지 묻게 됩니다. 시맨틱 레이어는 이런 정의를 한 곳으로 모아, 어느 도구를 쓰든 같은 정의를 쓰게 합니다."}, {"heading": "동작 원리", "body": "dbt Semantic Layer 는 지표를 BI 도구가 아니라 모델링 계층(원천 데이터를 분석용 테이블로 가공하는 단계)에서 한 번 정의합니다. 사용자가 지표를 요청하면 MetricFlow 라는 엔진이 정의에 맞춰 필요한 조인을 처리합니다. 정의를 바꾸면 그 지표를 부르는 모든 곳에 반영됩니다.\nSnowflake(클라우드 데이터 웨어하우스 회사)는 이번 발표에서 맥락을 세 층으로 나눴습니다. Business Ontology 는 승인된 의미를 저장하고, Semantic View 는 조인 · 필터 · 집계 같은 계산을 맡고, Cortex Sense 는 정의되지 않은 맥락을 추론합니다.\nSnowflake 엔지니어링 블로그는 온톨로지가 수식을 저장만 하고 실행하지 않는다고 밝힙니다. 사람이 승인한 정의가 추론보다 우선한다는 점도 함께 적습니다."}, {"heading": "예시 장면", "body": "Snowflake 엔지니어링 블로그의 예시를 줄여 옮깁니다. 같은 '순매출(Net Revenue)' 이라도 재무 도메인은 환불과 할인을 뺀 인식 매출로, 영업 도메인은 계약 시점에 할인을 뺀 수주 금액으로 정의합니다.\n사용자가 에이전트에게 지난 분기 순매출을 물으면, 에이전트는 두 정의를 보여 주고 어느 쪽인지 묻습니다. 사용자가 재무를 고르면 에이전트는 재무 도메인의 Semantic View 지표를 써서 답하고, 그 수치를 승인된(governed) 수치로 표시합니다.\n답에는 내부 거래 송장과 테스트 계정이 빠진다는 안내도 붙습니다. 같은 이름의 지표가 둘 있어도, 어느 정의를 썼는지가 답과 함께 드러나는 장면입니다."}, {"heading": "실무에서 확인할 점", "body": "첫째, 매출 같은 지표를 계산하는 SQL 이 여러 서비스나 API 에 따로 적혀 있는지 확인합니다.\n둘째, 같은 이름의 지표가 화면마다 다른 조건(기간 · 시간대 · 대상 범위)으로 계산되는지 확인합니다. 셋째, 지표 정의를 바꿀 때 누가 승인했는지 기록이 남는지 확인합니다.\n별도 도구를 들이지 않아도 PostgreSQL 뷰(View, 저장해 둔 조회문)나 공용 조회 함수 하나에 지표 정의를 모으는 것부터 시작할 수 있습니다. 사람이 검토한 뒤 결과를 내보내는 서비스라면, 결과와 함께 어느 지표 정의를 썼는지 보이는 것이 Snowflake 예시와 같은 방향입니다."}, {"heading": "흔한 함정", "body": "첫째, 정의만 모으고 소유자와 승인 절차를 두지 않으면 같은 이름에 다른 의미가 다시 섞입니다. Snowflake 가 개념마다 소속 도메인과 스튜어드(Steward, 승인 담당자)를 두는 이유가 여기에 있습니다.\n둘째, 의미 저장과 계산 실행을 한 계층에 모두 맡기려 하면 역할이 흐려집니다. Snowflake 는 온톨로지가 수식을 실행하지 않고 계산은 Semantic View 가 맡도록 나눴습니다.\n셋째, 정의를 바꾸면 모든 곳에 바로 반영되므로 검토 없이 바꾸면 과거 보고서와 숫자가 달라집니다. 정의 변경은 초안과 승인 단계를 거치게 하는 편이 안전합니다."}], "glossary": [{"term": "시맨틱 레이어(Semantic Layer)", "meaning": "원천 테이블과 화면 사이에서 업무 용어와 지표의 정의를 한 곳에 모아 두는 계층입니다."}, {"term": "지표(Metric)", "meaning": "매출 · 객단가처럼 원천 값을 집계해 업무 판단에 쓰는 숫자입니다."}, {"term": "BI 도구(Business Intelligence)", "meaning": "데이터를 불러와 대시보드와 보고서를 만드는 도구입니다. Tableau · Looker 가 대표적입니다."}, {"term": "dbt", "meaning": "데이터 웨어하우스 안의 데이터를 SQL 로 가공 · 관리하는 오픈소스 도구로, dbt Semantic Layer 는 그 위에서 지표를 정의하는 기능입니다."}, {"term": "데이터 웨어하우스(Data Warehouse)", "meaning": "여러 원천의 데이터를 분석용으로 모아 둔 저장소입니다. Snowflake 가 대표적인 클라우드 제품입니다."}, {"term": "MetricFlow", "meaning": "dbt Semantic Layer 에서 지표 정의를 읽고 요청에 맞는 조인과 집계를 처리하는 엔진입니다."}, {"term": "온톨로지(Ontology)", "meaning": "어떤 분야의 개념과 개념 사이 관계를 정해 둔 체계로, 여기서는 업무 용어의 승인된 의미를 담습니다."}, {"term": "도메인 스튜어드(Domain Steward)", "meaning": "한 업무 영역의 용어와 지표 정의를 승인하고 관리하는 담당자입니다."}], "sources": [{"label": "dbt 문서: dbt Semantic Layer", "url": "https://docs.getdbt.com/docs/use-dbt-semantic-layer/dbt-sl"}, {"label": "Snowflake 엔지니어링 블로그: Business Ontology", "url": "https://www.snowflake.com/en/blog/engineering/business-ontology-context/"}]}], "weeks": ["2026-11-10"]}</script>
+
+<script>
+(function () {
+  var TRACKS = [
+    { id: "domain", name: "도메인", note: "의사결정 지원 · 데이터 플랫폼", color: "var(--domain)",
+      areas: ["온톨로지·지식 그래프", "시맨틱 레이어", "데이터 객체화", "의사결정 지능", "추천·제안 시스템", "데이터 품질·계보", "데이터 계약", "사람 검토 자동화"] },
+    { id: "tech", name: "기술", note: "서버 · DB · 프레임워크 · 시스템 · 아키텍처 · 언어 · 서비스 운영 · 대용량 처리 · 과부하 · 장애 대응", color: "var(--tech)",
+      areas: ["서버", "DB", "프레임워크", "시스템", "아키텍처", "언어", "서비스 운영", "대용량 처리", "과부하", "장애 대응"] }
+  ];
+
+  var data;
+  try { data = JSON.parse(document.getElementById("library-data").textContent || "{}"); } catch (e) { data = {}; }
+  if (!data || !Array.isArray(data.concepts)) return;
+  var concepts = data.concepts.slice().sort(function (a, b) { return String(b.date || "").localeCompare(String(a.date || "")); });
+  var weeks = Array.isArray(data.weeks) ? data.weeks : [];
+
+  function el(tag, attrs, children) {
+    var n = document.createElement(tag);
+    if (attrs) for (var k in attrs) {
+      if (k === "text") n.textContent = attrs[k];
+      else if (k === "style") n.style.cssText = attrs[k];
+      else n.setAttribute(k, attrs[k]);
+    }
+    (children || []).forEach(function (c) { if (c) n.appendChild(typeof c === "string" ? document.createTextNode(c) : c); });
+    return n;
+  }
+  function safeUrl(u) { return /^https?:\/\//i.test(u || "") ? u : null; }
+  function hostOf(u) { try { return new URL(u).hostname.replace(/^www\./, ""); } catch (e) { return u; } }
+  function paras(text) {
+    return String(text || "").split(/\n/).filter(function (t) { return t.trim(); }).map(function (t) { return el("p", { text: t.trim() }); });
+  }
+  function textOf(c) {
+    var parts = [c.title, c.oneLine, c.area, c.related];
+    (c.sections || []).forEach(function (s) { parts.push(s.heading, s.body); });
+    (c.glossary || []).forEach(function (g) { parts.push(g.term, g.meaning); });
+    return parts.join(" ").toLowerCase();
+  }
+
+  // 분야 목록에 없는 분야도 버리지 않고 그 갈래 끝에 붙인다
+  TRACKS.forEach(function (t) {
+    concepts.forEach(function (c) {
+      if (c.track === t.id && c.area && t.areas.indexOf(c.area) < 0) t.areas.push(c.area);
+    });
+  });
+
+  document.title = "지식 노트 색인";
+  var app = document.getElementById("app");
+  app.textContent = "";
+
+  var termCount = concepts.reduce(function (n, c) { return n + (c.glossary || []).length; }, 0);
+  var search = el("input", { type: "search", placeholder: "제목 · 본문 · 용어로 찾기", "aria-label": "개념 찾기" });
+  var toggle = el("button", { type: "button", text: "모두 펼치기" });
+  var resultNote = el("span", { class: "result-note" });
+  app.appendChild(el("header", null, [
+    el("div", { class: "eyebrow", text: "주간 지식 노트 · 색인" }),
+    el("h1", { text: "지식 노트 색인" }),
+    el("div", { class: "sub", text: "개념 풀이 " + concepts.length + "편 · 용어 " + termCount + "개 · " + (data.updatedOn || "") + " 갱신" }),
+    el("div", { class: "tools" }, [search, toggle, resultNote])
+  ]));
+
+  // 왼쪽 분류
+  var nav = el("nav", { class: "cats", "aria-label": "분류" });
+  TRACKS.forEach(function (t) {
+    nav.appendChild(el("div", { style: "--c:" + t.color }, [
+      el("h2", { text: t.name }),
+      el("ul", null, t.areas.map(function (a, i) {
+        var n = concepts.filter(function (c) { return c.track === t.id && c.area === a; }).length;
+        var inner = [el("span", { text: a }), el("span", { class: "n", text: String(n) })];
+        return el("li", { class: n ? "" : "zero" }, [n ? el("a", { href: "#" + t.id + "-" + i }, inner) : el("a", { "aria-disabled": "true" }, inner)]);
+      }))
+    ]));
+  });
+  nav.appendChild(el("div", null, [el("ul", null, [
+    el("li", null, [el("a", { href: "#terms" }, [el("span", { text: "용어 색인" }), el("span", { class: "n", text: String(termCount) })])]),
+    el("li", null, [el("a", { href: "#reports" }, [el("span", { text: "주간 보고서" }), el("span", { class: "n", text: String(weeks.length) })])])
+  ])]));
+  app.appendChild(nav);
+
+  var main = el("main");
+  var rows = [];
+  TRACKS.forEach(function (t) {
+    var sec = el("section", { class: "track", style: "--c:" + t.color }, [el("h2", { text: t.name }), el("p", { class: "note", text: t.note })]);
+    t.areas.forEach(function (a, i) {
+      var list = concepts.filter(function (c) { return c.track === t.id && c.area === a; });
+      // 다룬 주제가 없는 분야는 본문에 그리지 않고 왼쪽 분류에 0 으로만 보인다
+      if (!list.length) return;
+      var box = el("div", { class: "area", id: t.id + "-" + i }, [el("h3", null, [a, el("span", { class: "n", text: list.length + "편" })])]);
+      list.forEach(function (c) {
+        var cid = c.id || (t.id + "-" + i + "-" + list.indexOf(c));
+        var body = el("div", { class: "cbody" });
+        if (c.related) body.appendChild(el("p", { class: "related", text: c.related }));
+        (c.sections || []).forEach(function (s, si) {
+          var sec2 = el("section", { class: "csec" }, [el("h4", null, [el("span", { class: "n", text: String(si + 1).padStart(2, "0") }), s.heading || ""])].concat(paras(s.body)));
+          if (s.code && s.code.text) {
+            sec2.appendChild(el("pre", { class: "code" }, [el("code", { text: s.code.text })]));
+            if (s.code.note) sec2.appendChild(el("span", { class: "code-note", text: s.code.note }));
+          }
+          body.appendChild(sec2);
+        });
+        if ((c.glossary || []).length) {
+          body.appendChild(el("dl", { class: "glossary" }, [].concat.apply([], c.glossary.map(function (g) {
+            return [el("dt", { text: g.term || "" }), el("dd", { text: g.meaning || "" })];
+          }))));
+        }
+        var refs = (c.sources || []).map(function (s) { var u = safeUrl(s.url); return u ? el("li", null, [el("a", { href: u, target: "_blank", rel: "noopener noreferrer", text: s.label || hostOf(u) })]) : null; }).filter(Boolean);
+        if (refs.length) body.appendChild(el("ol", { class: "refs" }, refs));
+        if (c.report) body.appendChild(el("span", { class: "from" }, ["실린 회차 · ", el("a", { href: c.report, text: c.date + " 주간 지식 노트" })]));
+        var det = el("details", { class: "concept", id: cid }, [
+          el("summary", null, [el("span", { class: "t", text: c.title || "" }), el("span", { class: "d", text: c.date || "" }), c.oneLine ? el("span", { class: "o", text: c.oneLine }) : null]),
+          body
+        ]);
+        box.appendChild(det);
+        rows.push({ node: det, box: box, text: textOf(c), c: c, cid: cid });
+      });
+      sec.appendChild(box);
+    });
+    main.appendChild(sec);
+  });
+
+  // 용어 색인
+  var terms = [];
+  rows.forEach(function (r) { (r.c.glossary || []).forEach(function (g) { terms.push({ term: g.term || "", meaning: g.meaning || "", r: r }); }); });
+  terms.sort(function (a, b) { return a.term.localeCompare(b.term, "ko"); });
+  main.appendChild(el("section", { id: "terms" }, [
+    el("h2", { text: "용어 색인" }),
+    terms.length ? el("dl", { class: "terms" }, [].concat.apply([], terms.map(function (t) {
+      var link = el("a", { href: "#" + t.r.cid, text: t.r.c.title || "" });
+      link.addEventListener("click", function () { t.r.node.open = true; });
+      return [el("dt", { text: t.term }), el("dd", null, [t.meaning, el("span", { class: "src" }, ["나온 글 · ", link])])];
+    }))) : el("p", { class: "none", text: "아직 용어 없음" })
+  ]));
+
+  // 주간 보고서
+  var reps = weeks.slice().sort().reverse();
+  main.appendChild(el("section", { id: "reports" }, [
+    el("h2", { text: "주간 보고서" }),
+    el("ul", { class: "reports" }, reps.map(function (d) { return el("li", null, [el("a", { href: "reports/" + d + ".html", text: d })]); }))
+  ]));
+  app.appendChild(main);
+
+  // 찾기 · 펼치기
+  var allOpen = false;
+  toggle.addEventListener("click", function () {
+    allOpen = !allOpen;
+    rows.forEach(function (r) { if (!r.node.hidden) r.node.open = allOpen; });
+    toggle.textContent = allOpen ? "모두 접기" : "모두 펼치기";
+  });
+  search.addEventListener("input", function () {
+    var q = search.value.trim().toLowerCase();
+    var shown = 0;
+    rows.forEach(function (r) {
+      var hit = !q || r.text.indexOf(q) >= 0;
+      r.node.hidden = !hit;
+      if (hit) shown++;
+    });
+    document.querySelectorAll(".area").forEach(function (box) {
+      var any = Array.prototype.some.call(box.querySelectorAll("details.concept"), function (d) { return !d.hidden; });
+      box.hidden = !!q && !any;
+    });
+    resultNote.textContent = q ? shown + "편 찾음" : "";
+  });
+  if (location.hash) {
+    var target = document.getElementById(location.hash.slice(1));
+    if (target && target.tagName === "DETAILS") { target.open = true; target.scrollIntoView(); }
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>지식 노트 색인</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* 배치: 쌓인 개념 풀이를 분류(도메인 · 기술 → 분야)별로 한 페이지에 모은다. 제목만 보이고 누르면 본문이 펼쳐진다. 아래에 용어 색인 */
+:root {
+  --bg: #f7f6f3; --surface: #ffffff; --fg: #1c1b19; --muted: #615f59; --line: #e4e1da;
+  --accent: #2f5fb3; --domain: #0f7c74; --tech: #5a4bc2; --chip-bg: #efede8; --code-bg: #f1efe9;
+  --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #131416; --surface: #1b1c1f; --fg: #e9e7e2; --muted: #a09d96; --line: #2c2d31;
+    --accent: #8fb0ff; --domain: #4fd1c5; --tech: #a99cff; --chip-bg: #26272b; --code-bg: #222327; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #131416; --surface: #1b1c1f; --fg: #e9e7e2; --muted: #a09d96; --line: #2c2d31;
+  --accent: #8fb0ff; --domain: #4fd1c5; --tech: #a99cff; --chip-bg: #26272b; --code-bg: #222327; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.7 var(--font-body); padding: 0 16px; word-break: keep-all; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-block: 40px 64px; display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 32px 40px; align-items: start; }
+header { grid-column: 1 / -1; display: grid; gap: 10px; }
+a { color: var(--accent); text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.eyebrow { font: 500 12px/1 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+h1 { margin: 0; font-size: clamp(26px, 5vw, 36px); line-height: 1.2; font-weight: 700; letter-spacing: -.02em; }
+.sub { color: var(--muted); font-size: 14px; }
+.tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 4px; }
+.tools input { flex: 1 1 260px; min-width: 0; font: 15px var(--font-body); padding: 9px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--fg); }
+.tools button { font: 500 13px var(--font-body); padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; }
+.result-note { font-size: 13px; color: var(--muted); }
+
+/* 왼쪽 분류 목록 */
+nav.cats { position: sticky; top: 16px; display: grid; gap: 18px; font-size: 14px; max-height: calc(100vh - 32px); overflow-y: auto; }
+nav.cats h2 { margin: 0 0 6px; font-size: 12px; font-weight: 700; letter-spacing: .08em; color: var(--c); }
+nav.cats ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+nav.cats a { display: flex; justify-content: space-between; gap: 8px; padding: 3px 8px; border-radius: 6px; color: var(--fg); text-decoration: none; }
+nav.cats a:hover { background: var(--chip-bg); }
+nav.cats a .n { font: 12px var(--font-mono); color: var(--muted); }
+nav.cats li.zero a { color: var(--muted); cursor: default; }
+nav.cats li.zero a:hover { background: transparent; }
+
+main { display: grid; gap: 40px; min-width: 0; }
+.track > h2 { margin: 0 0 4px; font-size: 22px; font-weight: 700; color: var(--c); }
+.track > .note { margin: 0 0 18px; color: var(--muted); font-size: 13px; }
+.area { margin-bottom: 26px; scroll-margin-top: 16px; }
+.area h3 { margin: 0 0 8px; padding-bottom: 6px; font-size: 16px; font-weight: 700; border-bottom: 2px solid var(--c); display: flex; gap: 8px; align-items: baseline; }
+.area h3 .n { font: 13px var(--font-mono); color: var(--muted); font-weight: 400; }
+.none { margin: 0; padding: 8px 0; color: var(--muted); font-size: 13px; }
+
+details.concept { border-bottom: 1px solid var(--line); scroll-margin-top: 16px; }
+details.concept > summary { list-style: none; cursor: pointer; padding: 12px 0; display: grid; grid-template-columns: 1fr auto; gap: 2px 16px; }
+details.concept > summary::-webkit-details-marker { display: none; }
+summary .t { font-weight: 600; font-size: 16px; line-height: 1.5; }
+summary .t::before { content: "▸ "; color: var(--c); }
+details[open] > summary .t::before { content: "▾ "; }
+summary .d { font: 12px var(--font-mono); color: var(--muted); white-space: nowrap; }
+summary .o { grid-column: 1 / -1; color: var(--muted); font-size: 14px; line-height: 1.65; }
+.cbody { display: grid; gap: 16px; padding: 4px 0 24px; }
+.csec { display: grid; gap: 6px; }
+.csec h4 { margin: 0; font-size: 15px; font-weight: 700; }
+.csec h4 .n { font: 500 12px var(--font-mono); color: var(--c); margin-right: 8px; }
+.csec p { margin: 0; line-height: 1.85; max-width: 70ch; overflow-wrap: anywhere; }
+.csec p + p { margin-top: 8px; }
+.related { margin: 0; font-size: 13px; color: var(--muted); }
+.related::before { content: "그 주 소식과 연결 · "; font-weight: 600; color: var(--fg); }
+pre.code { margin: 6px 0 0; padding: 14px 16px; border-radius: 8px; background: var(--code-bg); font: 13px/1.6 var(--font-mono); overflow-x: auto; }
+.code-note { font-size: 12px; color: var(--muted); }
+.glossary { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; padding: 14px 16px; border-radius: 8px; background: var(--chip-bg); font-size: 14px; }
+.glossary dt { font-weight: 600; }
+.glossary dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.refs { margin: 0; padding-left: 18px; font-size: 13px; color: var(--muted); }
+.refs a { overflow-wrap: anywhere; }
+.from { font-size: 13px; color: var(--muted); }
+
+/* 용어 색인 */
+#terms h2, #reports h2 { margin: 0 0 12px; font-size: 22px; font-weight: 700; }
+.terms { margin: 0; display: grid; grid-template-columns: minmax(160px, max-content) 1fr; gap: 0; }
+.terms dt, .terms dd { padding: 8px 0; border-bottom: 1px solid var(--line); margin: 0; }
+.terms dt { font-weight: 600; padding-right: 16px; }
+.terms dd { min-width: 0; overflow-wrap: anywhere; }
+.terms dd .src { display: block; font-size: 12px; }
+.reports { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.reports a { display: inline-block; padding: 5px 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); font: 13px var(--font-mono); text-decoration: none; color: var(--fg); }
+.nodata { padding: 40px 0; color: var(--muted); }
+
+@media (max-width: 760px) {
+  .wrap { grid-template-columns: 1fr; padding-block: 24px 48px; }
+  nav.cats { position: static; max-height: none; grid-template-columns: 1fr 1fr; }
+  .terms, .glossary { grid-template-columns: 1fr; }
+  .terms dt { border-bottom: 0; padding-bottom: 0; }
+}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <p class="nodata">색인 데이터가 없습니다.</p>
+</div>
+
+<!-- 루틴은 아래 JSON 한 덩어리만 바꿔 넣는다. 그 밖의 줄은 고치지 않는다. -->
+<script id="library-data" type="application/json">{}</script>
+
+<script>
+(function () {
+  var TRACKS = [
+    { id: "domain", name: "도메인", note: "의사결정 지원 · 데이터 플랫폼", color: "var(--domain)",
+      areas: ["온톨로지·지식 그래프", "시맨틱 레이어", "데이터 객체화", "의사결정 지능", "추천·제안 시스템", "데이터 품질·계보", "데이터 계약", "사람 검토 자동화"] },
+    { id: "tech", name: "기술", note: "서버 · DB · 프레임워크 · 시스템 · 아키텍처 · 언어 · 서비스 운영 · 대용량 처리 · 과부하 · 장애 대응", color: "var(--tech)",
+      areas: ["서버", "DB", "프레임워크", "시스템", "아키텍처", "언어", "서비스 운영", "대용량 처리", "과부하", "장애 대응"] }
+  ];
+
+  var data;
+  try { data = JSON.parse(document.getElementById("library-data").textContent || "{}"); } catch (e) { data = {}; }
+  if (!data || !Array.isArray(data.concepts)) return;
+  var concepts = data.concepts.slice().sort(function (a, b) { return String(b.date || "").localeCompare(String(a.date || "")); });
+  var weeks = Array.isArray(data.weeks) ? data.weeks : [];
+
+  function el(tag, attrs, children) {
+    var n = document.createElement(tag);
+    if (attrs) for (var k in attrs) {
+      if (k === "text") n.textContent = attrs[k];
+      else if (k === "style") n.style.cssText = attrs[k];
+      else n.setAttribute(k, attrs[k]);
+    }
+    (children || []).forEach(function (c) { if (c) n.appendChild(typeof c === "string" ? document.createTextNode(c) : c); });
+    return n;
+  }
+  function safeUrl(u) { return /^https?:\/\//i.test(u || "") ? u : null; }
+  function hostOf(u) { try { return new URL(u).hostname.replace(/^www\./, ""); } catch (e) { return u; } }
+  function paras(text) {
+    return String(text || "").split(/\n/).filter(function (t) { return t.trim(); }).map(function (t) { return el("p", { text: t.trim() }); });
+  }
+  function textOf(c) {
+    var parts = [c.title, c.oneLine, c.area, c.related];
+    (c.sections || []).forEach(function (s) { parts.push(s.heading, s.body); });
+    (c.glossary || []).forEach(function (g) { parts.push(g.term, g.meaning); });
+    return parts.join(" ").toLowerCase();
+  }
+
+  // 분야 목록에 없는 분야도 버리지 않고 그 갈래 끝에 붙인다
+  TRACKS.forEach(function (t) {
+    concepts.forEach(function (c) {
+      if (c.track === t.id && c.area && t.areas.indexOf(c.area) < 0) t.areas.push(c.area);
+    });
+  });
+
+  document.title = "지식 노트 색인";
+  var app = document.getElementById("app");
+  app.textContent = "";
+
+  var termCount = concepts.reduce(function (n, c) { return n + (c.glossary || []).length; }, 0);
+  var search = el("input", { type: "search", placeholder: "제목 · 본문 · 용어로 찾기", "aria-label": "개념 찾기" });
+  var toggle = el("button", { type: "button", text: "모두 펼치기" });
+  var resultNote = el("span", { class: "result-note" });
+  app.appendChild(el("header", null, [
+    el("div", { class: "eyebrow", text: "주간 지식 노트 · 색인" }),
+    el("h1", { text: "지식 노트 색인" }),
+    el("div", { class: "sub", text: "개념 풀이 " + concepts.length + "편 · 용어 " + termCount + "개 · " + (data.updatedOn || "") + " 갱신" }),
+    el("div", { class: "tools" }, [search, toggle, resultNote])
+  ]));
+
+  // 왼쪽 분류
+  var nav = el("nav", { class: "cats", "aria-label": "분류" });
+  TRACKS.forEach(function (t) {
+    nav.appendChild(el("div", { style: "--c:" + t.color }, [
+      el("h2", { text: t.name }),
+      el("ul", null, t.areas.map(function (a, i) {
+        var n = concepts.filter(function (c) { return c.track === t.id && c.area === a; }).length;
+        var inner = [el("span", { text: a }), el("span", { class: "n", text: String(n) })];
+        return el("li", { class: n ? "" : "zero" }, [n ? el("a", { href: "#" + t.id + "-" + i }, inner) : el("a", { "aria-disabled": "true" }, inner)]);
+      }))
+    ]));
+  });
+  nav.appendChild(el("div", null, [el("ul", null, [
+    el("li", null, [el("a", { href: "#terms" }, [el("span", { text: "용어 색인" }), el("span", { class: "n", text: String(termCount) })])]),
+    el("li", null, [el("a", { href: "#reports" }, [el("span", { text: "주간 보고서" }), el("span", { class: "n", text: String(weeks.length) })])])
+  ])]));
+  app.appendChild(nav);
+
+  var main = el("main");
+  var rows = [];
+  TRACKS.forEach(function (t) {
+    var sec = el("section", { class: "track", style: "--c:" + t.color }, [el("h2", { text: t.name }), el("p", { class: "note", text: t.note })]);
+    t.areas.forEach(function (a, i) {
+      var list = concepts.filter(function (c) { return c.track === t.id && c.area === a; });
+      // 다룬 주제가 없는 분야는 본문에 그리지 않고 왼쪽 분류에 0 으로만 보인다
+      if (!list.length) return;
+      var box = el("div", { class: "area", id: t.id + "-" + i }, [el("h3", null, [a, el("span", { class: "n", text: list.length + "편" })])]);
+      list.forEach(function (c) {
+        var cid = c.id || (t.id + "-" + i + "-" + list.indexOf(c));
+        var body = el("div", { class: "cbody" });
+        if (c.related) body.appendChild(el("p", { class: "related", text: c.related }));
+        (c.sections || []).forEach(function (s, si) {
+          var sec2 = el("section", { class: "csec" }, [el("h4", null, [el("span", { class: "n", text: String(si + 1).padStart(2, "0") }), s.heading || ""])].concat(paras(s.body)));
+          if (s.code && s.code.text) {
+            sec2.appendChild(el("pre", { class: "code" }, [el("code", { text: s.code.text })]));
+            if (s.code.note) sec2.appendChild(el("span", { class: "code-note", text: s.code.note }));
+          }
+          body.appendChild(sec2);
+        });
+        if ((c.glossary || []).length) {
+          body.appendChild(el("dl", { class: "glossary" }, [].concat.apply([], c.glossary.map(function (g) {
+            return [el("dt", { text: g.term || "" }), el("dd", { text: g.meaning || "" })];
+          }))));
+        }
+        var refs = (c.sources || []).map(function (s) { var u = safeUrl(s.url); return u ? el("li", null, [el("a", { href: u, target: "_blank", rel: "noopener noreferrer", text: s.label || hostOf(u) })]) : null; }).filter(Boolean);
+        if (refs.length) body.appendChild(el("ol", { class: "refs" }, refs));
+        if (c.report) body.appendChild(el("span", { class: "from" }, ["실린 회차 · ", el("a", { href: c.report, text: c.date + " 주간 지식 노트" })]));
+        var det = el("details", { class: "concept", id: cid }, [
+          el("summary", null, [el("span", { class: "t", text: c.title || "" }), el("span", { class: "d", text: c.date || "" }), c.oneLine ? el("span", { class: "o", text: c.oneLine }) : null]),
+          body
+        ]);
+        box.appendChild(det);
+        rows.push({ node: det, box: box, text: textOf(c), c: c, cid: cid });
+      });
+      sec.appendChild(box);
+    });
+    main.appendChild(sec);
+  });
+
+  // 용어 색인
+  var terms = [];
+  rows.forEach(function (r) { (r.c.glossary || []).forEach(function (g) { terms.push({ term: g.term || "", meaning: g.meaning || "", r: r }); }); });
+  terms.sort(function (a, b) { return a.term.localeCompare(b.term, "ko"); });
+  main.appendChild(el("section", { id: "terms" }, [
+    el("h2", { text: "용어 색인" }),
+    terms.length ? el("dl", { class: "terms" }, [].concat.apply([], terms.map(function (t) {
+      var link = el("a", { href: "#" + t.r.cid, text: t.r.c.title || "" });
+      link.addEventListener("click", function () { t.r.node.open = true; });
+      return [el("dt", { text: t.term }), el("dd", null, [t.meaning, el("span", { class: "src" }, ["나온 글 · ", link])])];
+    }))) : el("p", { class: "none", text: "아직 용어 없음" })
+  ]));
+
+  // 주간 보고서
+  var reps = weeks.slice().sort().reverse();
+  main.appendChild(el("section", { id: "reports" }, [
+    el("h2", { text: "주간 보고서" }),
+    el("ul", { class: "reports" }, reps.map(function (d) { return el("li", null, [el("a", { href: "reports/" + d + ".html", text: d })]); }))
+  ]));
+  app.appendChild(main);
+
+  // 찾기 · 펼치기
+  var allOpen = false;
+  toggle.addEventListener("click", function () {
+    allOpen = !allOpen;
+    rows.forEach(function (r) { if (!r.node.hidden) r.node.open = allOpen; });
+    toggle.textContent = allOpen ? "모두 접기" : "모두 펼치기";
+  });
+  search.addEventListener("input", function () {
+    var q = search.value.trim().toLowerCase();
+    var shown = 0;
+    rows.forEach(function (r) {
+      var hit = !q || r.text.indexOf(q) >= 0;
+      r.node.hidden = !hit;
+      if (hit) shown++;
+    });
+    document.querySelectorAll(".area").forEach(function (box) {
+      var any = Array.prototype.some.call(box.querySelectorAll("details.concept"), function (d) { return !d.hidden; });
+      box.hidden = !!q && !any;
+    });
+    resultNote.textContent = q ? shown + "편 찾음" : "";
+  });
+  if (location.hash) {
+    var target = document.getElementById(location.hash.slice(1));
+    if (target && target.tagName === "DETAILS") { target.open = true; target.scrollIntoView(); }
+  }
+})();
+</script>
+</body>
+</html>
