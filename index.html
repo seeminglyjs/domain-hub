@@ -109,7 +109,253 @@ pre.code { margin: 6px 0 0; padding: 14px 16px; border-radius: 8px; background: 
 </div>
 
 <!-- 루틴은 아래 JSON 한 덩어리만 바꿔 넣는다. 그 밖의 줄은 고치지 않는다. -->
-<script id="library-data" type="application/json">{"updatedOn": "2026-11-10", "concepts": [{"id": "2026-11-10-tech", "date": "2026-11-10", "track": "tech", "area": "과부하", "slug": "cache-stampede", "title": "캐시 스탬피드(Cache Stampede) — 만료 순간 몰리는 재계산 막기", "oneLine": "캐시 항목이 만료되는 순간 많은 요청이 동시에 같은 값을 다시 계산하면서 DB 같은 공유 자원이 과부하에 빠지는 현상입니다. 도그파일링(dog-piling)이라고도 부릅니다.", "related": "이번 주 Next.js 보안 패치 가운데 하나는 캐시가 비어 있는 상태에서 동시에 들어온 호출이 결과를 잘못 공유한 문제여서, 캐시를 채우는 순간의 동시성을 다룬다는 점에서 이어집니다.", "path": "notes/tech/overload/2026-11-10-cache-stampede.md", "report": "reports/2026-11-10.html", "sections": [{"heading": "왜 필요한가", "body": "캐시는 무거운 계산 결과를 잠시 저장해 DB 부하를 줄이는 장치입니다. 문제는 자주 읽히는 항목 하나가 만료되는 순간에 생깁니다. 그 순간 들어온 요청은 모두 캐시 미스(Cache Miss, 캐시에 값이 없음)를 보고 각자 DB 에 같은 조회를 보냅니다.\n평소 캐시가 막아 주던 부하가 한꺼번에 DB 로 넘어가면 응답이 느려집니다. 응답이 느려질수록 재계산이 더 많이 겹치고, 캐시가 다시 채워지지 않는 상태가 이어질 수 있습니다. 위키백과는 이 상태를 캐시 적중률이 0 으로 떨어지고 시스템이 계속 과부하에 머무는 연쇄 장애로 설명합니다."}, {"heading": "동작 원리", "body": "동시에 겹치는 재계산 수는 대략 재계산에 걸리는 시간과 초당 요청 수를 곱한 값입니다. 위키백과의 예시 수치로는 렌더링에 3초가 걸리고 초당 10건이 들어올 때 약 30개 프로세스가 같은 페이지를 동시에 다시 만듭니다.\n막는 방법은 세 가지로 나뉩니다. 첫째는 락(Lock, 한 번에 하나만 들어가게 하는 잠금)으로, 캐시 미스가 난 요청 가운데 락을 얻은 하나만 재계산하고 나머지는 기다리거나 오래된 값을 씁니다. 둘째는 외부 재계산(External Recomputation)으로, 요청을 처리하는 프로세스 대신 별도 작업이 만료 전에 값을 다시 채웁니다.\n셋째는 확률적 조기 만료(Probabilistic Early Expiration)입니다. 각 요청이 만료 시각에 가까워질수록 높아지는 확률로 미리 재계산할지 스스로 정하므로, 재계산 시점이 흩어집니다. Vattani 등의 2015년 VLDB(데이터베이스 분야 국제 학회) 논문이 이 방식을 다루며, 위키백과는 매개변수 beta 를 1 로 두어도 실제로 잘 동작한다고 적습니다."}, {"heading": "예시 장면", "body": "아래는 설명을 위한 가상 장면이며, 수치는 모두 예시 수치입니다. 공개된 사후 분석 사례는 이번 회차에 확인하지 못했습니다.\n10:00:00 에 쇼핑몰 관리 화면이 읽는 '오늘 상품별 매출 요약' 캐시가 만료됩니다. 이 요약을 만드는 집계 쿼리는 2초가 걸리고, 화면 요청은 초당 50건 들어옵니다.\n10:00:00~10:00:02 사이에 약 100건의 요청이 각자 같은 집계 쿼리를 DB 로 보냅니다. 서버의 DB 커넥션 풀(Connection Pool)은 10개뿐이어서 나머지 요청은 커넥션을 기다립니다.\n같은 풀을 쓰는 다른 API 도 커넥션을 얻지 못해 타임아웃이 납니다. 락이나 미리 채우기가 있었다면 집계 쿼리는 한 번만 돌고, 나머지 요청은 2초 뒤 같은 결과를 받았을 것입니다."}, {"heading": "실무에서 확인할 점", "body": "Spring 의 @Cacheable(메서드 결과를 캐시에 저장하게 하는 애너테이션)에는 sync 속성이 있습니다. 공식 문서는 sync=true 이면 값을 계산하는 동안 캐시 공급자(Cache Provider, 값을 실제로 저장하는 캐시 구현체)가 그 항목을 잠그고, 한 스레드만 계산하며 나머지는 기다린다고 설명합니다.\n서버를 여러 대 띄우는 서비스라면 이 잠금이 어디까지 미치는지 확인합니다. 문서는 잠금을 캐시 공급자에 맡긴다고만 적으므로, 서버마다 따로 두는 메모리 캐시라면 서버 수만큼 재계산이 일어날 수 있습니다. Redis(메모리 기반 키-값 저장소) 같은 공유 캐시를 쓴다면 그 공급자의 문서에서 여러 서버 사이의 동시 재계산을 막는지 확인합니다.\n무거운 요약 값은 요청이 아니라 정기 작업(스케줄러)이 미리 채우는 외부 재계산 방식이 맞는지도 검토할 수 있습니다. 같은 TTL(Time To Live, 만료 시간)로 한꺼번에 만료되는 키 묶음이 있는지도 함께 봅니다.", "code": {"text": "@Cacheable(cacheNames=\"foos\", sync=true)\npublic Foo executeExpensiveOperation(String id) {...}", "note": "Spring Framework 참조 문서 'Declarative Annotation-based Caching' 의 Synchronized Caching 예시입니다."}}, {"heading": "흔한 함정", "body": "첫째, 락만 걸고 락을 잡은 프로세스가 죽는 경우를 대비하지 않으면 다른 요청이 계속 기다립니다. 위키백과는 락 보유자 장애 · 락 TTL 설정 · 경쟁 상태(Race Condition, 실행 순서에 따라 결과가 달라지는 상태)를 올바르게 다루기 어렵다고 지적합니다.\n둘째, 외부 재계산을 모든 키에 쓰려고 하면 맞지 않습니다. 이 방식은 고정된 키에 맞고, 상품 ID 처럼 요청마다 달라지는 키에는 잘 맞지 않습니다.\n셋째, 확률적 조기 만료는 재계산 소요 시간과 만료 시각을 캐시 항목과 함께 저장해야 하므로 메모리 사용량이 늘어납니다. 이 비용을 계산하지 않고 모든 캐시에 적용하면 캐시 용량이 부족해질 수 있습니다."}], "glossary": [{"term": "캐시 미스(Cache Miss)", "meaning": "요청한 값이 캐시에 없어 원래 저장소에서 다시 읽거나 계산해야 하는 상황입니다."}, {"term": "TTL(Time To Live)", "meaning": "캐시 항목이 저장된 뒤 만료될 때까지의 시간입니다."}, {"term": "도그파일링(Dog-piling)", "meaning": "캐시 스탬피드의 다른 이름으로, 여러 요청이 한 자원에 한꺼번에 몰리는 모습을 가리킵니다."}, {"term": "커넥션 풀(Connection Pool)", "meaning": "DB 연결을 미리 몇 개 열어 두고 요청마다 빌려 쓰는 구조로, 개수가 정해져 있어 다 쓰이면 나머지 요청이 기다립니다."}, {"term": "확률적 조기 만료(Probabilistic Early Expiration)", "meaning": "만료 시각에 가까울수록 높아지는 확률로 각 요청이 미리 재계산할지 정하게 해 재계산 시점을 흩어 놓는 방법입니다."}, {"term": "@Cacheable", "meaning": "Spring 에서 메서드 결과를 캐시에 저장하고 다음 호출에 저장된 값을 돌려주게 하는 애너테이션입니다."}, {"term": "VLDB(Very Large Data Bases)", "meaning": "데이터베이스 분야의 국제 학회로, 이 글의 확률적 조기 만료 논문이 실린 곳입니다."}], "sources": [{"label": "위키백과: Cache stampede", "url": "https://en.wikipedia.org/wiki/Cache_stampede"}, {"label": "Spring Framework 문서: 캐시 애너테이션(sync)", "url": "https://docs.spring.io/spring-framework/reference/integration/cache/annotations.html"}, {"label": "Vattani 외, Optimal Probabilistic Cache Stampede Prevention (VLDB 2015, PDF)", "url": "https://www.vldb.org/pvldb/vol8/p886-vattani.pdf"}]}, {"id": "2026-11-10-domain", "date": "2026-11-10", "track": "domain", "area": "시맨틱 레이어", "slug": "semantic-layer", "title": "시맨틱 레이어(Semantic Layer) — 지표 정의를 한 곳에 두기", "oneLine": "매출 같은 업무 지표를 어떤 테이블에서 어떻게 조인 · 집계하는지 한 곳에 정의하고, 화면 · 보고서 · AI 에이전트가 모두 그 정의를 불러 쓰게 하는 계층입니다.", "related": "이번 주 Snowflake 가 발표한 Business Ontology 는 지표의 의미와 계산을 나눠 맡기는 구조여서, 시맨틱 레이어가 어디까지 맡는지 보여 주는 사례입니다.", "path": "notes/domain/semantic-layer/2026-11-10-semantic-layer.md", "report": "reports/2026-11-10.html", "sections": [{"heading": "왜 필요한가", "body": "매출 같은 지표의 계산 규칙이 BI 도구(Business Intelligence, 대시보드와 보고서를 만드는 도구, 예: Tableau · Looker)마다 따로 있으면, 사업부마다 같은 매출(revenue)을 다르게 계산하게 됩니다. dbt(SQL 로 데이터 웨어하우스 안의 데이터를 가공 · 관리하는 오픈소스 도구) 문서도 이 문제를 시맨틱 레이어가 필요한 이유로 듭니다. 같은 이름의 숫자가 화면마다 다르면 보는 사람은 어느 숫자도 믿지 않게 됩니다.\n예를 들어 매출 대시보드는 환불을 뺀 금액을 쓰고 월간 보고서는 환불을 넣은 금액을 쓰면, 보는 사람은 두 숫자가 왜 다른지 묻게 됩니다. 시맨틱 레이어는 이런 정의를 한 곳으로 모아, 어느 도구를 쓰든 같은 정의를 쓰게 합니다."}, {"heading": "동작 원리", "body": "dbt Semantic Layer 는 지표를 BI 도구가 아니라 모델링 계층(원천 데이터를 분석용 테이블로 가공하는 단계)에서 한 번 정의합니다. 사용자가 지표를 요청하면 MetricFlow 라는 엔진이 정의에 맞춰 필요한 조인을 처리합니다. 정의를 바꾸면 그 지표를 부르는 모든 곳에 반영됩니다.\nSnowflake(클라우드 데이터 웨어하우스 회사)는 이번 발표에서 맥락을 세 층으로 나눴습니다. Business Ontology 는 승인된 의미를 저장하고, Semantic View 는 조인 · 필터 · 집계 같은 계산을 맡고, Cortex Sense 는 정의되지 않은 맥락을 추론합니다.\nSnowflake 엔지니어링 블로그는 온톨로지가 수식을 저장만 하고 실행하지 않는다고 밝힙니다. 사람이 승인한 정의가 추론보다 우선한다는 점도 함께 적습니다."}, {"heading": "예시 장면", "body": "Snowflake 엔지니어링 블로그의 예시를 줄여 옮깁니다. 같은 '순매출(Net Revenue)' 이라도 재무 도메인은 환불과 할인을 뺀 인식 매출로, 영업 도메인은 계약 시점에 할인을 뺀 수주 금액으로 정의합니다.\n사용자가 에이전트에게 지난 분기 순매출을 물으면, 에이전트는 두 정의를 보여 주고 어느 쪽인지 묻습니다. 사용자가 재무를 고르면 에이전트는 재무 도메인의 Semantic View 지표를 써서 답하고, 그 수치를 승인된(governed) 수치로 표시합니다.\n답에는 내부 거래 송장과 테스트 계정이 빠진다는 안내도 붙습니다. 같은 이름의 지표가 둘 있어도, 어느 정의를 썼는지가 답과 함께 드러나는 장면입니다."}, {"heading": "실무에서 확인할 점", "body": "첫째, 매출 같은 지표를 계산하는 SQL 이 여러 서비스나 API 에 따로 적혀 있는지 확인합니다.\n둘째, 같은 이름의 지표가 화면마다 다른 조건(기간 · 시간대 · 대상 범위)으로 계산되는지 확인합니다. 셋째, 지표 정의를 바꿀 때 누가 승인했는지 기록이 남는지 확인합니다.\n별도 도구를 들이지 않아도 PostgreSQL 뷰(View, 저장해 둔 조회문)나 공용 조회 함수 하나에 지표 정의를 모으는 것부터 시작할 수 있습니다. 사람이 검토한 뒤 결과를 내보내는 서비스라면, 결과와 함께 어느 지표 정의를 썼는지 보이는 것이 Snowflake 예시와 같은 방향입니다."}, {"heading": "흔한 함정", "body": "첫째, 정의만 모으고 소유자와 승인 절차를 두지 않으면 같은 이름에 다른 의미가 다시 섞입니다. Snowflake 가 개념마다 소속 도메인과 스튜어드(Steward, 승인 담당자)를 두는 이유가 여기에 있습니다.\n둘째, 의미 저장과 계산 실행을 한 계층에 모두 맡기려 하면 역할이 흐려집니다. Snowflake 는 온톨로지가 수식을 실행하지 않고 계산은 Semantic View 가 맡도록 나눴습니다.\n셋째, 정의를 바꾸면 모든 곳에 바로 반영되므로 검토 없이 바꾸면 과거 보고서와 숫자가 달라집니다. 정의 변경은 초안과 승인 단계를 거치게 하는 편이 안전합니다."}], "glossary": [{"term": "시맨틱 레이어(Semantic Layer)", "meaning": "원천 테이블과 화면 사이에서 업무 용어와 지표의 정의를 한 곳에 모아 두는 계층입니다."}, {"term": "지표(Metric)", "meaning": "매출 · 객단가처럼 원천 값을 집계해 업무 판단에 쓰는 숫자입니다."}, {"term": "BI 도구(Business Intelligence)", "meaning": "데이터를 불러와 대시보드와 보고서를 만드는 도구입니다. Tableau · Looker 가 대표적입니다."}, {"term": "dbt", "meaning": "데이터 웨어하우스 안의 데이터를 SQL 로 가공 · 관리하는 오픈소스 도구로, dbt Semantic Layer 는 그 위에서 지표를 정의하는 기능입니다."}, {"term": "데이터 웨어하우스(Data Warehouse)", "meaning": "여러 원천의 데이터를 분석용으로 모아 둔 저장소입니다. Snowflake 가 대표적인 클라우드 제품입니다."}, {"term": "MetricFlow", "meaning": "dbt Semantic Layer 에서 지표 정의를 읽고 요청에 맞는 조인과 집계를 처리하는 엔진입니다."}, {"term": "온톨로지(Ontology)", "meaning": "어떤 분야의 개념과 개념 사이 관계를 정해 둔 체계로, 여기서는 업무 용어의 승인된 의미를 담습니다."}, {"term": "도메인 스튜어드(Domain Steward)", "meaning": "한 업무 영역의 용어와 지표 정의를 승인하고 관리하는 담당자입니다."}], "sources": [{"label": "dbt 문서: dbt Semantic Layer", "url": "https://docs.getdbt.com/docs/use-dbt-semantic-layer/dbt-sl"}, {"label": "Snowflake 엔지니어링 블로그: Business Ontology", "url": "https://www.snowflake.com/en/blog/engineering/business-ontology-context/"}]}], "weeks": ["2026-11-10"]}</script>
+<script id="library-data" type="application/json">{
+ "updatedOn": "2026-11-11",
+ "concepts": [
+  {
+   "id": "2026-11-10-tech",
+   "date": "2026-11-10",
+   "track": "tech",
+   "area": "과부하",
+   "slug": "cache-stampede",
+   "title": "캐시 스탬피드(Cache Stampede) — 만료 순간 몰리는 재계산 막기",
+   "oneLine": "캐시 항목이 만료되는 순간 많은 요청이 동시에 같은 값을 다시 계산하면서 DB 같은 공유 자원이 과부하에 빠지는 현상입니다. 도그파일링(dog-piling)이라고도 부릅니다.",
+   "related": "이번 주 Next.js 보안 패치 가운데 하나는 캐시가 비어 있는 상태에서 동시에 들어온 호출이 결과를 잘못 공유한 문제여서, 캐시를 채우는 순간의 동시성을 다룬다는 점에서 이어집니다.",
+   "path": "notes/tech/overload/2026-11-10-cache-stampede.md",
+   "report": "reports/2026-11-10.html",
+   "sections": [
+    {
+     "heading": "왜 필요한가",
+     "body": "캐시는 무거운 계산 결과를 잠시 저장해 DB 부하를 줄이는 장치입니다. 문제는 자주 읽히는 항목 하나가 만료되는 순간에 생깁니다. 그 순간 들어온 요청은 모두 캐시 미스(Cache Miss, 캐시에 값이 없음)를 보고 각자 DB 에 같은 조회를 보냅니다.\n평소 캐시가 막아 주던 부하가 한꺼번에 DB 로 넘어가면 응답이 느려집니다. 응답이 느려질수록 재계산이 더 많이 겹치고, 캐시가 다시 채워지지 않는 상태가 이어질 수 있습니다. 위키백과는 이 상태를 캐시 적중률이 0 으로 떨어지고 시스템이 계속 과부하에 머무는 연쇄 장애로 설명합니다."
+    },
+    {
+     "heading": "동작 원리",
+     "body": "동시에 겹치는 재계산 수는 대략 재계산에 걸리는 시간과 초당 요청 수를 곱한 값입니다. 위키백과의 예시 수치로는 렌더링에 3초가 걸리고 초당 10건이 들어올 때 약 30개 프로세스가 같은 페이지를 동시에 다시 만듭니다.\n막는 방법은 세 가지로 나뉩니다. 첫째는 락(Lock, 한 번에 하나만 들어가게 하는 잠금)으로, 캐시 미스가 난 요청 가운데 락을 얻은 하나만 재계산하고 나머지는 기다리거나 오래된 값을 씁니다. 둘째는 외부 재계산(External Recomputation)으로, 요청을 처리하는 프로세스 대신 별도 작업이 만료 전에 값을 다시 채웁니다.\n셋째는 확률적 조기 만료(Probabilistic Early Expiration)입니다. 각 요청이 만료 시각에 가까워질수록 높아지는 확률로 미리 재계산할지 스스로 정하므로, 재계산 시점이 흩어집니다. Vattani 등의 2015년 VLDB(데이터베이스 분야 국제 학회) 논문이 이 방식을 다루며, 위키백과는 매개변수 beta 를 1 로 두어도 실제로 잘 동작한다고 적습니다."
+    },
+    {
+     "heading": "예시 장면",
+     "body": "아래는 설명을 위한 가상 장면이며, 수치는 모두 예시 수치입니다. 공개된 사후 분석 사례는 이번 회차에 확인하지 못했습니다.\n10:00:00 에 쇼핑몰 관리 화면이 읽는 '오늘 상품별 매출 요약' 캐시가 만료됩니다. 이 요약을 만드는 집계 쿼리는 2초가 걸리고, 화면 요청은 초당 50건 들어옵니다.\n10:00:00~10:00:02 사이에 약 100건의 요청이 각자 같은 집계 쿼리를 DB 로 보냅니다. 서버의 DB 커넥션 풀(Connection Pool)은 10개뿐이어서 나머지 요청은 커넥션을 기다립니다.\n같은 풀을 쓰는 다른 API 도 커넥션을 얻지 못해 타임아웃이 납니다. 락이나 미리 채우기가 있었다면 집계 쿼리는 한 번만 돌고, 나머지 요청은 2초 뒤 같은 결과를 받았을 것입니다."
+    },
+    {
+     "heading": "실무에서 확인할 점",
+     "body": "Spring 의 @Cacheable(메서드 결과를 캐시에 저장하게 하는 애너테이션)에는 sync 속성이 있습니다. 공식 문서는 sync=true 이면 값을 계산하는 동안 캐시 공급자(Cache Provider, 값을 실제로 저장하는 캐시 구현체)가 그 항목을 잠그고, 한 스레드만 계산하며 나머지는 기다린다고 설명합니다.\n서버를 여러 대 띄우는 서비스라면 이 잠금이 어디까지 미치는지 확인합니다. 문서는 잠금을 캐시 공급자에 맡긴다고만 적으므로, 서버마다 따로 두는 메모리 캐시라면 서버 수만큼 재계산이 일어날 수 있습니다. Redis(메모리 기반 키-값 저장소) 같은 공유 캐시를 쓴다면 그 공급자의 문서에서 여러 서버 사이의 동시 재계산을 막는지 확인합니다.\n무거운 요약 값은 요청이 아니라 정기 작업(스케줄러)이 미리 채우는 외부 재계산 방식이 맞는지도 검토할 수 있습니다. 같은 TTL(Time To Live, 만료 시간)로 한꺼번에 만료되는 키 묶음이 있는지도 함께 봅니다.",
+     "code": {
+      "text": "@Cacheable(cacheNames=\"foos\", sync=true)\npublic Foo executeExpensiveOperation(String id) {...}",
+      "note": "Spring Framework 참조 문서 'Declarative Annotation-based Caching' 의 Synchronized Caching 예시입니다."
+     }
+    },
+    {
+     "heading": "흔한 함정",
+     "body": "첫째, 락만 걸고 락을 잡은 프로세스가 죽는 경우를 대비하지 않으면 다른 요청이 계속 기다립니다. 위키백과는 락 보유자 장애 · 락 TTL 설정 · 경쟁 상태(Race Condition, 실행 순서에 따라 결과가 달라지는 상태)를 올바르게 다루기 어렵다고 지적합니다.\n둘째, 외부 재계산을 모든 키에 쓰려고 하면 맞지 않습니다. 이 방식은 고정된 키에 맞고, 상품 ID 처럼 요청마다 달라지는 키에는 잘 맞지 않습니다.\n셋째, 확률적 조기 만료는 재계산 소요 시간과 만료 시각을 캐시 항목과 함께 저장해야 하므로 메모리 사용량이 늘어납니다. 이 비용을 계산하지 않고 모든 캐시에 적용하면 캐시 용량이 부족해질 수 있습니다."
+    }
+   ],
+   "glossary": [
+    {
+     "term": "캐시 미스(Cache Miss)",
+     "meaning": "요청한 값이 캐시에 없어 원래 저장소에서 다시 읽거나 계산해야 하는 상황입니다."
+    },
+    {
+     "term": "TTL(Time To Live)",
+     "meaning": "캐시 항목이 저장된 뒤 만료될 때까지의 시간입니다."
+    },
+    {
+     "term": "도그파일링(Dog-piling)",
+     "meaning": "캐시 스탬피드의 다른 이름으로, 여러 요청이 한 자원에 한꺼번에 몰리는 모습을 가리킵니다."
+    },
+    {
+     "term": "커넥션 풀(Connection Pool)",
+     "meaning": "DB 연결을 미리 몇 개 열어 두고 요청마다 빌려 쓰는 구조로, 개수가 정해져 있어 다 쓰이면 나머지 요청이 기다립니다."
+    },
+    {
+     "term": "확률적 조기 만료(Probabilistic Early Expiration)",
+     "meaning": "만료 시각에 가까울수록 높아지는 확률로 각 요청이 미리 재계산할지 정하게 해 재계산 시점을 흩어 놓는 방법입니다."
+    },
+    {
+     "term": "@Cacheable",
+     "meaning": "Spring 에서 메서드 결과를 캐시에 저장하고 다음 호출에 저장된 값을 돌려주게 하는 애너테이션입니다."
+    },
+    {
+     "term": "VLDB(Very Large Data Bases)",
+     "meaning": "데이터베이스 분야의 국제 학회로, 이 글의 확률적 조기 만료 논문이 실린 곳입니다."
+    }
+   ],
+   "sources": [
+    {
+     "label": "위키백과: Cache stampede",
+     "url": "https://en.wikipedia.org/wiki/Cache_stampede"
+    },
+    {
+     "label": "Spring Framework 문서: 캐시 애너테이션(sync)",
+     "url": "https://docs.spring.io/spring-framework/reference/integration/cache/annotations.html"
+    },
+    {
+     "label": "Vattani 외, Optimal Probabilistic Cache Stampede Prevention (VLDB 2015, PDF)",
+     "url": "https://www.vldb.org/pvldb/vol8/p886-vattani.pdf"
+    }
+   ]
+  },
+  {
+   "id": "2026-11-10-domain",
+   "date": "2026-11-10",
+   "track": "domain",
+   "area": "시맨틱 레이어",
+   "slug": "semantic-layer",
+   "title": "시맨틱 레이어(Semantic Layer) — 지표 정의를 한 곳에 두기",
+   "oneLine": "매출 같은 업무 지표를 어떤 테이블에서 어떻게 조인 · 집계하는지 한 곳에 정의하고, 화면 · 보고서 · AI 에이전트가 모두 그 정의를 불러 쓰게 하는 계층입니다.",
+   "related": "이번 주 Snowflake 가 발표한 Business Ontology 는 지표의 의미와 계산을 나눠 맡기는 구조여서, 시맨틱 레이어가 어디까지 맡는지 보여 주는 사례입니다.",
+   "path": "notes/domain/semantic-layer/2026-11-10-semantic-layer.md",
+   "report": "reports/2026-11-10.html",
+   "sections": [
+    {
+     "heading": "왜 필요한가",
+     "body": "매출 같은 지표의 계산 규칙이 BI 도구(Business Intelligence, 대시보드와 보고서를 만드는 도구, 예: Tableau · Looker)마다 따로 있으면, 사업부마다 같은 매출(revenue)을 다르게 계산하게 됩니다. dbt(SQL 로 데이터 웨어하우스 안의 데이터를 가공 · 관리하는 오픈소스 도구) 문서도 이 문제를 시맨틱 레이어가 필요한 이유로 듭니다. 같은 이름의 숫자가 화면마다 다르면 보는 사람은 어느 숫자도 믿지 않게 됩니다.\n예를 들어 매출 대시보드는 환불을 뺀 금액을 쓰고 월간 보고서는 환불을 넣은 금액을 쓰면, 보는 사람은 두 숫자가 왜 다른지 묻게 됩니다. 시맨틱 레이어는 이런 정의를 한 곳으로 모아, 어느 도구를 쓰든 같은 정의를 쓰게 합니다."
+    },
+    {
+     "heading": "동작 원리",
+     "body": "dbt Semantic Layer 는 지표를 BI 도구가 아니라 모델링 계층(원천 데이터를 분석용 테이블로 가공하는 단계)에서 한 번 정의합니다. 사용자가 지표를 요청하면 MetricFlow 라는 엔진이 정의에 맞춰 필요한 조인을 처리합니다. 정의를 바꾸면 그 지표를 부르는 모든 곳에 반영됩니다.\nSnowflake(클라우드 데이터 웨어하우스 회사)는 이번 발표에서 맥락을 세 층으로 나눴습니다. Business Ontology 는 승인된 의미를 저장하고, Semantic View 는 조인 · 필터 · 집계 같은 계산을 맡고, Cortex Sense 는 정의되지 않은 맥락을 추론합니다.\nSnowflake 엔지니어링 블로그는 온톨로지가 수식을 저장만 하고 실행하지 않는다고 밝힙니다. 사람이 승인한 정의가 추론보다 우선한다는 점도 함께 적습니다."
+    },
+    {
+     "heading": "예시 장면",
+     "body": "Snowflake 엔지니어링 블로그의 예시를 줄여 옮깁니다. 같은 '순매출(Net Revenue)' 이라도 재무 도메인은 환불과 할인을 뺀 인식 매출로, 영업 도메인은 계약 시점에 할인을 뺀 수주 금액으로 정의합니다.\n사용자가 에이전트에게 지난 분기 순매출을 물으면, 에이전트는 두 정의를 보여 주고 어느 쪽인지 묻습니다. 사용자가 재무를 고르면 에이전트는 재무 도메인의 Semantic View 지표를 써서 답하고, 그 수치를 승인된(governed) 수치로 표시합니다.\n답에는 내부 거래 송장과 테스트 계정이 빠진다는 안내도 붙습니다. 같은 이름의 지표가 둘 있어도, 어느 정의를 썼는지가 답과 함께 드러나는 장면입니다."
+    },
+    {
+     "heading": "실무에서 확인할 점",
+     "body": "첫째, 매출 같은 지표를 계산하는 SQL 이 여러 서비스나 API 에 따로 적혀 있는지 확인합니다.\n둘째, 같은 이름의 지표가 화면마다 다른 조건(기간 · 시간대 · 대상 범위)으로 계산되는지 확인합니다. 셋째, 지표 정의를 바꿀 때 누가 승인했는지 기록이 남는지 확인합니다.\n별도 도구를 들이지 않아도 PostgreSQL 뷰(View, 저장해 둔 조회문)나 공용 조회 함수 하나에 지표 정의를 모으는 것부터 시작할 수 있습니다. 사람이 검토한 뒤 결과를 내보내는 서비스라면, 결과와 함께 어느 지표 정의를 썼는지 보이는 것이 Snowflake 예시와 같은 방향입니다."
+    },
+    {
+     "heading": "흔한 함정",
+     "body": "첫째, 정의만 모으고 소유자와 승인 절차를 두지 않으면 같은 이름에 다른 의미가 다시 섞입니다. Snowflake 가 개념마다 소속 도메인과 스튜어드(Steward, 승인 담당자)를 두는 이유가 여기에 있습니다.\n둘째, 의미 저장과 계산 실행을 한 계층에 모두 맡기려 하면 역할이 흐려집니다. Snowflake 는 온톨로지가 수식을 실행하지 않고 계산은 Semantic View 가 맡도록 나눴습니다.\n셋째, 정의를 바꾸면 모든 곳에 바로 반영되므로 검토 없이 바꾸면 과거 보고서와 숫자가 달라집니다. 정의 변경은 초안과 승인 단계를 거치게 하는 편이 안전합니다."
+    }
+   ],
+   "glossary": [
+    {
+     "term": "시맨틱 레이어(Semantic Layer)",
+     "meaning": "원천 테이블과 화면 사이에서 업무 용어와 지표의 정의를 한 곳에 모아 두는 계층입니다."
+    },
+    {
+     "term": "지표(Metric)",
+     "meaning": "매출 · 객단가처럼 원천 값을 집계해 업무 판단에 쓰는 숫자입니다."
+    },
+    {
+     "term": "BI 도구(Business Intelligence)",
+     "meaning": "데이터를 불러와 대시보드와 보고서를 만드는 도구입니다. Tableau · Looker 가 대표적입니다."
+    },
+    {
+     "term": "dbt",
+     "meaning": "데이터 웨어하우스 안의 데이터를 SQL 로 가공 · 관리하는 오픈소스 도구로, dbt Semantic Layer 는 그 위에서 지표를 정의하는 기능입니다."
+    },
+    {
+     "term": "데이터 웨어하우스(Data Warehouse)",
+     "meaning": "여러 원천의 데이터를 분석용으로 모아 둔 저장소입니다. Snowflake 가 대표적인 클라우드 제품입니다."
+    },
+    {
+     "term": "MetricFlow",
+     "meaning": "dbt Semantic Layer 에서 지표 정의를 읽고 요청에 맞는 조인과 집계를 처리하는 엔진입니다."
+    },
+    {
+     "term": "온톨로지(Ontology)",
+     "meaning": "어떤 분야의 개념과 개념 사이 관계를 정해 둔 체계로, 여기서는 업무 용어의 승인된 의미를 담습니다."
+    },
+    {
+     "term": "도메인 스튜어드(Domain Steward)",
+     "meaning": "한 업무 영역의 용어와 지표 정의를 승인하고 관리하는 담당자입니다."
+    }
+   ],
+   "sources": [
+    {
+     "label": "dbt 문서: dbt Semantic Layer",
+     "url": "https://docs.getdbt.com/docs/use-dbt-semantic-layer/dbt-sl"
+    },
+    {
+     "label": "Snowflake 엔지니어링 블로그: Business Ontology",
+     "url": "https://www.snowflake.com/en/blog/engineering/business-ontology-context/"
+    }
+   ]
+  },
+  {
+   "id": "2026-11-11-domain",
+   "date": "2026-11-11",
+   "track": "domain",
+   "area": "데이터 계약",
+   "slug": "data-contract",
+   "title": "데이터 계약(Data Contract) — 데이터를 넘기는 쪽과 받는 쪽의 약속",
+   "oneLine": "데이터를 만드는 쪽이 그 데이터를 쓰는 쪽에게 컬럼 이름 · 자료형 · 품질 · 갱신 주기 · 책임자 같은 조건을 문서로 약속하고, 그 약속을 기계가 검사하게 하는 방식입니다.",
+   "related": "이번 회차 Databricks 소식은 지표 정의를 한 곳에 두고 BI 도구로 한 방향으로만 내보내는 구조여서, 받는 쪽이 기대할 수 있는 모양을 약속한다는 점에서 데이터 계약과 이어집니다.",
+   "path": "notes/domain/data-contracts/2026-11-11-data-contract.md",
+   "report": "reports/2026-11-11.html",
+   "sections": [
+    {
+     "heading": "왜 필요한가",
+     "body": "주문 서비스를 맡은 팀이 orders 테이블의 amount 컬럼 이름을 total_amount 로 바꿨다고 가정합니다. 서비스 코드와 API 시험은 모두 통과하므로 배포는 문제없이 끝납니다. 그런데 이 테이블을 매일 밤 읽어 매출 집계를 만드는 다른 팀의 정기 작업은 다음 날 새벽에 실패합니다.\n데이터를 넘기는 쪽은 누가 이 컬럼을 읽는지 모르고, 받는 쪽은 언제 무엇이 바뀔지 모릅니다. API 에는 명세와 버전이 있지만, 테이블이나 이벤트로 넘기는 데이터에는 그런 약속이 없는 경우가 많습니다. 데이터 계약(Data Contract)은 이 빈자리를 API 명세와 같은 방식으로 채우려는 개념입니다."
+    },
+    {
+     "heading": "동작 원리",
+     "body": "데이터 계약은 보통 세 부분으로 이루어집니다. 첫째는 약속의 내용입니다. 컬럼 이름 · 자료형 · 빈 값 허용 여부 같은 스키마(Schema, 데이터의 구조 정의)와 품질 조건 · 갱신 주기 · 책임자를 적습니다. ODCS(Open Data Contract Standard, 데이터 계약을 YAML 로 적는 공개 표준)는 이 내용을 스키마 · 데이터 품질 · 서비스 수준 약속(Service-Level Agreement) · 팀 · 지원 채널 같은 절로 나눕니다.\n둘째는 검사입니다. 약속을 문서로만 두면 지켜지지 않으므로, 데이터를 만드는 단계에서 기계가 계약과 실제 결과를 비교합니다. dbt(SQL 로 데이터 웨어하우스 안의 데이터를 가공 · 관리하는 오픈소스 도구)의 모델 계약(Model Contract)은 빌드 전에 쿼리 결과의 컬럼 이름과 자료형이 계약과 맞는지 확인하고, 맞지 않으면 빌드를 실패시킵니다.\n셋째는 변경 절차입니다. dbt 는 이전 상태와 비교해 컬럼 삭제 · 자료형 변경 · 제약 조건 삭제나 수정을 깨지는 변경(Breaking Change)으로 보고 오류를 냅니다. dbt 문서는 이런 변경을 다루는 방법으로 모델 버전(Model Version) 기능을 안내합니다."
+    },
+    {
+     "heading": "예시 장면",
+     "body": "아래는 설명을 위한 가상 장면입니다. 숙소 예약 서비스의 예약 팀은 reservations 테이블을 만들고, 정산 팀은 그 테이블을 읽어 일별 정산 집계를 만듭니다.\n월요일에 두 팀은 reservations 의 계약을 정합니다. 계약에는 reservation_id 는 비어 있으면 안 되고, price 는 정수이며, 매일 새벽 2시 전에 전날 데이터가 채워진다는 조건이 들어갑니다. 책임자 칸에는 예약 팀이 적힙니다.\n수요일에 예약 팀 개발자가 price 를 소수점 금액으로 바꾸는 변경을 올립니다. 배포 전 검사가 계약의 자료형과 다르다는 이유로 실패하고, 개발자는 정산 팀과 먼저 이야기해야 한다는 것을 그 자리에서 알게 됩니다.\n두 팀은 새 컬럼 price_decimal 을 추가하고 기존 price 를 한 달 동안 유지하기로 합니다. 정산 집계는 그 사이에 새 컬럼으로 옮겨 가고, 새벽 정기 작업은 한 번도 실패하지 않습니다."
+    },
+    {
+     "heading": "실무에서 확인할 점",
+     "body": "첫째, 서비스 DB 테이블을 다른 팀의 정기 작업이나 분석 쿼리가 직접 읽고 있는지 확인합니다. 직접 읽는 곳이 있다면 그 테이블은 이미 약속 없이 공개된 API 와 같습니다.\n둘째, 스키마를 바꾸는 마이그레이션(Migration, DB 구조 변경 스크립트)을 검토할 때 컬럼 삭제 · 이름 변경 · 자료형 변경을 따로 표시하는 규칙이 있는지 확인합니다. dbt 문서의 표는 Postgres 에서 not_null · primary_key · foreign_key · unique · check 다섯 제약이 모두 정의되고 강제된다고 적으므로, PostgreSQL 을 쓰는 서비스라면 계약의 제약을 DB 제약으로 그대로 옮길 수 있습니다.\n셋째, 서버 여러 대와 여러 팀이 함께 읽는 이벤트나 정기 작업 결과 테이블은 책임자 · 갱신 주기 · 늦게 도착했을 때 알릴 곳을 한 문서에 적어 둡니다. 별도 도구 없이도 ODCS 형식의 YAML 파일 하나를 코드 저장소에 두고 코드 검토 대상에 넣는 것부터 시작할 수 있습니다.",
+     "code": {
+      "text": "models:\n  - name: dim_customers\n    config:\n      contract:\n        enforced: true\n    columns:\n      - name: customer_id\n        data_type: int\n        constraints:\n          - type: not_null\n      - name: customer_name\n        data_type: string",
+      "note": "dbt 문서 'Model contracts' 의 계약 설정 예시를 줄여 옮겼습니다."
+     }
+    },
+    {
+     "heading": "흔한 함정",
+     "body": "첫째, 계약을 문서로만 쓰고 검사에 연결하지 않으면 몇 달 뒤 실제 테이블과 문서가 달라집니다. 빌드나 배포 단계에서 기계가 약속을 확인해야 계약이 계속 유효합니다.\n둘째, 데이터 플랫폼마다 제약 조건을 강제하는 범위가 다릅니다. dbt 문서에 따르면 Snowflake(클라우드 데이터 웨어하우스)와 Redshift(AWS 의 데이터 웨어하우스)는 not_null 만 강제하고 primary_key · foreign_key · unique 는 정의만 받고 강제하지 않습니다. 계약에 unique 를 적었다고 중복이 막힌다고 믿으면 중복 행이 그대로 쌓입니다.\n셋째, 모든 테이블에 계약을 걸면 작은 변경마다 검토가 필요해 개발 속도가 떨어집니다. 다른 팀이나 외부 시스템이 읽는 데이터처럼 팀 경계를 넘는 데이터부터 계약을 거는 편이 부담이 적습니다."
+    }
+   ],
+   "glossary": [
+    {
+     "term": "데이터 계약(Data Contract)",
+     "meaning": "데이터를 만드는 쪽이 쓰는 쪽에게 구조 · 품질 · 갱신 주기 · 책임자를 문서로 약속하고 기계로 검사하는 방식입니다."
+    },
+    {
+     "term": "스키마(Schema)",
+     "meaning": "컬럼 이름 · 자료형 · 빈 값 허용 여부처럼 데이터의 구조를 정한 정의입니다."
+    },
+    {
+     "term": "깨지는 변경(Breaking Change)",
+     "meaning": "컬럼 삭제나 자료형 변경처럼 기존 소비자가 고치지 않으면 실패하게 되는 변경입니다."
+    },
+    {
+     "term": "모델 계약(Model Contract)",
+     "meaning": "dbt 에서 모델 결과의 컬럼 이름 · 자료형 · 제약을 약속하고, 맞지 않으면 빌드를 실패시키는 설정입니다."
+    },
+    {
+     "term": "ODCS(Open Data Contract Standard)",
+     "meaning": "Bitol 프로젝트가 공개한, 데이터 계약을 YAML 파일로 적는 표준입니다."
+    },
+    {
+     "term": "서비스 수준 약속(Service-Level Agreement)",
+     "meaning": "갱신 주기 · 가용성처럼 데이터나 서비스가 지켜야 할 수준을 정한 약속으로, 흔히 SLA 라고 줄여 씁니다."
+    },
+    {
+     "term": "마이그레이션(Migration)",
+     "meaning": "DB 의 테이블 · 컬럼 구조를 바꾸는 스크립트와 그 적용 과정입니다."
+    }
+   ],
+   "sources": [
+    {
+     "label": "dbt 문서: Model contracts",
+     "url": "https://docs.getdbt.com/docs/mesh/govern/model-contracts"
+    },
+    {
+     "label": "Bitol: Open Data Contract Standard",
+     "url": "https://bitol-io.github.io/open-data-contract-standard/latest/"
+    }
+   ]
+  }
+ ],
+ "weeks": [
+  "2026-11-10",
+  "2026-11-11"
+ ]
+}</script>
 
 <script>
 (function () {
@@ -164,7 +410,7 @@ pre.code { margin: 6px 0 0; padding: 14px 16px; border-radius: 8px; background: 
   var toggle = el("button", { type: "button", text: "모두 펼치기" });
   var resultNote = el("span", { class: "result-note" });
   app.appendChild(el("header", null, [
-    el("div", { class: "eyebrow", text: "주간 지식 노트 · 색인" }),
+    el("div", { class: "eyebrow", text: "지식 노트 · 색인" }),
     el("h1", { text: "지식 노트 색인" }),
     el("div", { class: "sub", text: "개념 풀이 " + concepts.length + "편 · 용어 " + termCount + "개 · " + (data.updatedOn || "") + " 갱신" }),
     el("div", { class: "tools" }, [search, toggle, resultNote])
@@ -184,7 +430,7 @@ pre.code { margin: 6px 0 0; padding: 14px 16px; border-radius: 8px; background: 
   });
   nav.appendChild(el("div", null, [el("ul", null, [
     el("li", null, [el("a", { href: "#terms" }, [el("span", { text: "용어 색인" }), el("span", { class: "n", text: String(termCount) })])]),
-    el("li", null, [el("a", { href: "#reports" }, [el("span", { text: "주간 보고서" }), el("span", { class: "n", text: String(weeks.length) })])])
+    el("li", null, [el("a", { href: "#reports" }, [el("span", { text: "회차 보고서" }), el("span", { class: "n", text: String(weeks.length) })])])
   ])]));
   app.appendChild(nav);
 
@@ -216,7 +462,7 @@ pre.code { margin: 6px 0 0; padding: 14px 16px; border-radius: 8px; background: 
         }
         var refs = (c.sources || []).map(function (s) { var u = safeUrl(s.url); return u ? el("li", null, [el("a", { href: u, target: "_blank", rel: "noopener noreferrer", text: s.label || hostOf(u) })]) : null; }).filter(Boolean);
         if (refs.length) body.appendChild(el("ol", { class: "refs" }, refs));
-        if (c.report) body.appendChild(el("span", { class: "from" }, ["실린 회차 · ", el("a", { href: c.report, text: c.date + " 주간 지식 노트" })]));
+        if (c.report) body.appendChild(el("span", { class: "from" }, ["실린 회차 · ", el("a", { href: c.report, text: c.date + " 지식 노트" })]));
         var det = el("details", { class: "concept", id: cid }, [
           el("summary", null, [el("span", { class: "t", text: c.title || "" }), el("span", { class: "d", text: c.date || "" }), c.oneLine ? el("span", { class: "o", text: c.oneLine }) : null]),
           body
@@ -242,10 +488,10 @@ pre.code { margin: 6px 0 0; padding: 14px 16px; border-radius: 8px; background: 
     }))) : el("p", { class: "none", text: "아직 용어 없음" })
   ]));
 
-  // 주간 보고서
+  // 회차 보고서
   var reps = weeks.slice().sort().reverse();
   main.appendChild(el("section", { id: "reports" }, [
-    el("h2", { text: "주간 보고서" }),
+    el("h2", { text: "회차 보고서" }),
     el("ul", { class: "reports" }, reps.map(function (d) { return el("li", null, [el("a", { href: "reports/" + d + ".html", text: d })]); }))
   ]));
   app.appendChild(main);
