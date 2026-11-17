@@ -109,7 +109,7 @@ pre.code { margin: 6px 0 0; padding: 14px 16px; border-radius: 8px; background: 
 </div>
 
 <!-- 루틴은 아래 JSON 한 덩어리만 바꿔 넣는다. 그 밖의 줄은 고치지 않는다. -->
-<script id="library-data" type="application/json">{"updatedOn": "2026-11-16", "concepts": [
+<script id="library-data" type="application/json">{"updatedOn": "2026-11-17", "concepts": [
 {"id": "2026-11-10-tech", "date": "2026-11-10", "track": "tech", "area": "과부하", "slug": "cache-stampede", "title": "캐시 스탬피드(Cache Stampede) — 만료 순간 몰리는 재계산 막기", "oneLine": "캐시 항목이 만료되는 순간 많은 요청이 동시에 같은 값을 다시 계산하면서 DB 같은 공유 자원이 과부하에 빠지는 현상입니다. 도그파일링(dog-piling)이라고도 부릅니다.", "related": "이번 주 Next.js 보안 패치 가운데 하나는 캐시가 비어 있는 상태에서 동시에 들어온 호출이 결과를 잘못 공유한 문제여서, 캐시를 채우는 순간의 동시성을 다룬다는 점에서 이어집니다.", "path": "notes/tech/overload/2026-11-10-cache-stampede.md", "report": "reports/2026-11-10.html",
 "sections": [
 {"heading": "왜 필요한가", "body": "캐시는 무거운 계산 결과를 잠시 저장해 DB 부하를 줄이는 장치입니다. 문제는 자주 읽히는 항목 하나가 만료되는 순간에 생깁니다. 그 순간 들어온 요청은 모두 캐시 미스(Cache Miss, 캐시에 값이 없음)를 보고 각자 DB 에 같은 조회를 보냅니다.\n평소 캐시가 막아 주던 부하가 한꺼번에 DB 로 넘어가면 응답이 느려집니다. 응답이 느려질수록 재계산이 더 많이 겹치고, 캐시가 다시 채워지지 않는 상태가 이어질 수 있습니다. 위키백과는 이 상태를 캐시 적중률이 0 으로 떨어지고 시스템이 계속 과부하에 머무는 연쇄 장애로 설명합니다."},
@@ -245,9 +245,33 @@ pre.code { margin: 6px 0 0; padding: 14px 16px; border-radius: 8px; background: 
 {"label": "AWS 백서: Disaster recovery options in the cloud(네 가지 복구 방식)", "url": "https://docs.aws.amazon.com/whitepapers/latest/disaster-recovery-workloads-on-aws/disaster-recovery-options-in-the-cloud.html"},
 {"label": "AWS 백서: Testing disaster recovery", "url": "https://docs.aws.amazon.com/whitepapers/latest/disaster-recovery-workloads-on-aws/testing-disaster-recovery.html"},
 {"label": "PostgreSQL 문서: Continuous Archiving and Point-in-Time Recovery", "url": "https://www.postgresql.org/docs/current/continuous-archiving.html"}
+]},
+{"id": "2026-11-17-domain", "date": "2026-11-17", "track": "domain", "area": "추천·제안 시스템", "slug": "next-best-action", "title": "다음 최선 행동(Next Best Action) — 걸러내기와 점수 매기기로 지금 할 제안 하나 고르기", "oneLine": "고객에게 할 수 있는 여러 행동 후보를 자격 · 적용성 · 적합성 조건과 접촉 횟수 제한으로 먼저 걸러 낸 뒤, 수락 확률 · 가치 · 사업 가중치를 곱한 점수로 순위를 매겨 지금 할 행동 하나를 고르는 방식입니다.", "related": "이번 회차 Databricks 예제는 실시간 제안 순위 모델을 만들면서 순위 계산이 최종 결정이 아니고 자격 · 동의 · 적합성 · 억제 조건을 따로 더해야 한다고 적으며, 이 글은 그 나머지 단계를 다룹니다.", "path": "notes/domain/recommendation-systems/2026-11-17-next-best-action.md", "report": "reports/2026-11-17.html",
+"sections": [
+{"heading": "왜 필요한가", "body": "온라인 쇼핑몰 앱을 연 고객에게 첫 화면 배너 한 칸으로 보여 줄 수 있는 제안이 40개 있다고 가정합니다. 추천 모델이 매긴 점수 1등을 그대로 보여 주면, 이미 가입한 유료 멤버십을 다시 권하거나 나이 제한이 있는 상품을 미성년 고객에게 권할 수 있습니다. 어제 다섯 번 넘긴 같은 배너가 오늘도 맨 앞에 나오고, 이익이 거의 없는 제안이 클릭률이 높다는 이유로 계속 자리를 차지할 수도 있습니다.\n반대로 사람이 정한 규칙만으로 고르면 모든 고객이 같은 순서의 제안을 보게 되어, 고객마다 다른 관심을 반영하지 못합니다. 다음 최선 행동(Next Best Action)은 규칙으로 걸러 내는 단계와 점수로 순위를 매기는 단계를 정해진 순서로 묶어, '지금 이 고객에게 무엇을 할지'를 하나 고르는 방식입니다. 상품 제안만 고르는 경우는 다음 최선 제안(Next Best Offer)이라고 부르기도 합니다."},
+{"heading": "동작 원리", "body": "첫 단계는 후보 행동 목록입니다. 상품 제안 · 안내 메시지 · 이탈 방지 연락처럼 지금 할 수 있는 행동을 모두 후보로 둡니다.\n두 번째 단계는 걸러 내기입니다. Pega(고객 응대 · 의사결정 자동화 소프트웨어 회사)의 교육 자료는 이 조건을 자격(Eligibility) · 적용성(Applicability) · 적합성(Suitability) 세 가지로 나누고 이 순서로 평가합니다. 자격은 법이나 업무상 반드시 지켜야 하는 조건(예: 신용카드는 18세 이상)이고, 적용성은 이미 가진 상품처럼 고객 상황에 맞지 않는 제안을 거르는 조건(예: 상위 카드를 가진 고객에게 하위 카드 제외)입니다. 적합성은 고객에게 실제로 도움이 되는지를 보는 조건(예: 부채 비율이 기준보다 높은 고객에게 카드 제안 제외)입니다.\n세 번째 단계는 접촉 정책(Contact Policy)입니다. 같은 행동을 짧은 기간에 반복해 보이면 고객이 피로를 느끼므로, 노출 · 클릭 · 무시 같은 결과 횟수를 세어 일정 기간 그 행동을 보이지 않습니다. Pega 교육 자료의 예는 한 주에 다섯 번 무시한 광고를 2주 동안 보이지 않는 규칙입니다.\n네 번째 단계는 중재(Arbitration)로, 남은 후보에 순위를 매겨 맨 위 행동을 고릅니다. Pega 교육 자료는 성향(Propensity, 고객이 제안을 받아들일 확률, 0~1) · 맥락 가중치(Context Weighting, 지금 상황에서의 중요도, 0~100%) · 사업 가치(Business Value, 행동의 금액 가치) · 사업 레버(Business Lever, 사업 담당자가 특정 행동의 순위를 올리거나 내리는 조정값, 0~100%)를 곱한 P×C×V×L 값을 우선순위로 씁니다. 예시 수치로 성향 0.10 · 가치 50,000원인 행동은 5,000, 성향 0.30 · 가치 10,000원인 행동은 3,000 이므로, 다른 값이 같다면 앞의 행동이 선택됩니다.\n마지막 단계는 고객의 반응(수락 · 무시 · 거절)을 기록하는 것입니다. 이 기록은 다음 성향 계산과 접촉 정책의 횟수 세기에 다시 쓰입니다."},
+{"heading": "예시 장면", "body": "아래는 설명을 위한 가상 장면이며, 시각과 수치는 모두 예시 수치입니다. 온라인 쇼핑몰의 후보 행동은 유료 멤버십 가입 · 무료 배송 제안 · 카드 간편결제 등록 · 장바구니 알림 등 40개입니다.\n09:00 에 고객 K 가 앱을 엽니다. 자격 조건에서 성인 인증이 필요한 제안 2개가 제외되고, 적용성 조건에서 이미 가입한 멤버십 제안 1개가 제외됩니다. 적합성 조건에서는 최근 반품이 잦은 고객에게 맞지 않는 묶음 할인 제안 2개가 제외되어 후보가 35개로 줄어듭니다.\n접촉 정책 단계에서는 지난 7일 동안 다섯 번 넘긴 무료 배송 배너가 2주 동안 제외되어 34개가 남습니다. 중재 단계에서 성향 × 가치가 가장 높은 카드 간편결제 등록이 1위가 되어 배너에 표시됩니다.\n09:02 에 K 가 배너를 넘기면 '무시' 결과가 기록됩니다. 이 기록은 다음 접속 때 접촉 정책의 횟수와 성향 학습에 함께 쓰입니다.\nDatabricks(데이터 · AI 분석 플랫폼 회사)가 2026-11-16 공개한 예제는 이 가운데 중재 단계를 실시간으로 보여 줍니다. 소매 은행 앱 세션 안에서 LightGBM(트리 기반 머신러닝 라이브러리) 순위 모델이 40개 제안 전체에 점수를 매깁니다. 글은 이 순위 계산이 최종 제안 결정이 아니며, 운영 전에 자격 · 동의 · 적합성 · 억제 조건을 더해야 한다고 밝힙니다."},
+{"heading": "실무에서 확인할 점", "body": "첫째, 걸러 내기 조건을 점수 계산과 분리된 단계로 코드에 두고, 후보마다 어느 조건으로 제외되었는지 사유를 남기는지 확인합니다. 사유가 남아야 '왜 이 고객에게 이 제안이 보이지 않았나'라는 문의에 답할 수 있습니다.\n둘째, 접촉 정책에 쓰는 노출 · 결과 기록을 어디에 두는지 확인합니다. 서버를 여러 대 띄우는 서비스에서 이 횟수를 서버 메모리에 두면 서버마다 횟수가 달라, 같은 배너가 정한 횟수보다 많이 보입니다. PostgreSQL 기록 테이블(고객 · 행동 · 결과 · 시각)이나 Redis(메모리 기반 키-값 저장소) 같은 공유 저장소에 두고, 고객과 시각으로 기간 집계를 빠르게 할 인덱스가 있는지 확인합니다.\n셋째, 정기 작업이 밤에 제안을 미리 골라 두는 구조라면, 화면에 보이는 순간 자격과 접촉 정책을 한 번 더 확인하는지 봅니다. 밤사이 고객이 이미 가입했거나 같은 배너를 여러 번 넘겼을 수 있기 때문입니다.\n넷째, 사업 가치와 사업 레버 같은 가중치는 사업 담당자가 정하는 정책값입니다. 코드 상수로 고정하지 않고 설정 테이블에 두며, 누가 언제 바꿨는지 기록하는지 확인합니다.\n다섯째, 성향을 학습하는 데이터가 결정 시점의 값으로 만들어지는지 확인합니다. Databricks 예제는 학습 데이터를 만들 때 각 특징값(Feature, 모델 입력값)을 그 사건 시점의 값으로 다시 계산해 미래 값이 섞이지 않게 합니다."},
+{"heading": "흔한 함정", "body": "첫째, 모델 점수 1등을 그대로 최종 결정으로 쓰는 경우입니다. Databricks 글이 밝히듯 순위 계산에는 자격 · 동의 · 적합성 조건이 들어 있지 않으므로, 받을 수 없는 제안이나 동의하지 않은 연락이 고객에게 나갈 수 있습니다.\n둘째, 접촉 정책 없이 중재만 돌리는 경우입니다. 점수가 높은 행동은 다음 날에도 점수가 높으므로, 같은 제안이 매번 맨 앞에 나와 고객이 배너 자체를 보지 않게 됩니다. 노출만 기록하고 '무시'를 결과로 정의하지 않으면 접촉 정책도 횟수를 셀 수 없습니다.\n셋째, 사업 가치를 곱하는 효과를 확인하지 않는 경우입니다. 곱셈 식에서는 가치가 큰 행동이 성향이 낮아도 앞서기 쉬우므로, 고객이 거의 받아들이지 않는 고가 제안만 반복될 수 있습니다. 가치와 레버를 바꾼 기록이 없으면 이후 성과 변화가 고객 반응 때문인지 가중치 변경 때문인지 가릴 수 없습니다."}
+],
+"glossary": [
+{"term": "다음 최선 행동(Next Best Action)", "meaning": "고객마다 지금 할 수 있는 행동 후보 가운데 규칙과 점수로 하나를 골라 실행하는 의사결정 방식입니다."},
+{"term": "자격 조건(Eligibility)", "meaning": "법이나 업무상 반드시 지켜야 하는 조건으로, 어긋나는 후보를 가장 먼저 제외합니다."},
+{"term": "적용성 조건(Applicability)", "meaning": "고객이 이미 가진 상품처럼 지금 상황에 맞지 않는 후보를 제외하는 조건입니다."},
+{"term": "적합성 조건(Suitability)", "meaning": "고객에게 실제로 도움이 되는 제안인지를 보고 맞지 않는 후보를 제외하는 조건입니다."},
+{"term": "접촉 정책(Contact Policy)", "meaning": "노출 · 클릭 · 무시 횟수를 기간별로 세어 같은 행동을 일정 기간 보이지 않게 하는 규칙입니다."},
+{"term": "중재(Arbitration)", "meaning": "걸러 내기를 통과한 후보에 우선순위 점수를 매겨 맨 위 행동을 고르는 단계입니다."},
+{"term": "성향(Propensity)", "meaning": "고객이 특정 제안을 받아들일 것으로 모델이 예측한 확률입니다."},
+{"term": "특징값(Feature)", "meaning": "모델에 넣는 입력값으로, 최근 30일 평균 잔액처럼 원천 데이터를 가공해 만듭니다."}
+],
+"sources": [
+{"label": "Pega Academy: Customer engagement policies(자격 · 적용성 · 적합성)", "url": "https://academy.pega.com/topic/customer-engagement-policies/v1"},
+{"label": "Pega Academy: Action arbitration(P×C×V×L)", "url": "https://academy.pega.com/topic/action-arbitration/v3/in/69621"},
+{"label": "Pega Academy: Contact policies(노출 횟수에 따른 억제)", "url": "https://academy.pega.com/topic/contact-policies/v1/in/9776"},
+{"label": "Databricks 블로그: Build a real-time next-best-offer recommender using Databricks Feature Views", "url": "https://www.databricks.com/blog/build-real-time-next-best-offer-recommender-using-databricks-feature-views"}
 ]}
 ],
-"weeks": ["2026-11-10", "2026-11-11", "2026-11-12", "2026-11-13", "2026-11-16"]}</script>
+"weeks": ["2026-11-10", "2026-11-11", "2026-11-12", "2026-11-13", "2026-11-16", "2026-11-17"]}</script>
 
 <script>
 (function () {
