@@ -5,7 +5,9 @@
 | 용어 | 뜻 | 나온 글 |
 |---|---|---|
 | @Cacheable | Spring 에서 메서드 결과를 캐시에 저장하고 다음 호출에 저장된 값을 돌려주게 하는 애너테이션입니다. | [캐시 스탬피드(Cache Stampede) — 만료 순간 몰리는 재계산 막기](notes/tech/overload/2026-11-10-cache-stampede.md) |
+| ANALYZE | 테이블의 값 분포 통계를 새로 모아 질의 계획기가 알맞은 실행 계획을 고르게 하는 PostgreSQL 명령입니다. | [대량 적재(Bulk Loading) — PostgreSQL 에 수백만 행을 빠르게 넣기](notes/tech/high-volume-processing/2026-11-18-bulk-loading.md) |
 | BI 도구(Business Intelligence) | 데이터를 불러와 대시보드와 보고서를 만드는 도구입니다. Tableau · Looker 가 대표적입니다. | [시맨틱 레이어(Semantic Layer) — 지표 정의를 한 곳에 두기](notes/domain/semantic-layer/2026-11-10-semantic-layer.md) |
+| COPY | 파일이나 DB 연결로 받은 여러 행을 한 명령으로 테이블에 넣거나 꺼내는 PostgreSQL 전용 명령입니다. | [대량 적재(Bulk Loading) — PostgreSQL 에 수백만 행을 빠르게 넣기](notes/tech/high-volume-processing/2026-11-18-bulk-loading.md) |
 | Marquez | OpenLineage 이벤트를 받아 메타데이터를 모으고 보여 주는 LF AI & Data 재단의 참조 구현입니다. | [데이터 계보(Data Lineage) — 숫자가 어디서 왔는지 거슬러 찾기](notes/domain/data-quality-lineage/2026-11-13-data-lineage.md) |
 | MetricFlow | dbt Semantic Layer 에서 지표 정의를 읽고 요청에 맞는 조인과 집계를 처리하는 엔진입니다. | [시맨틱 레이어(Semantic Layer) — 지표 정의를 한 곳에 두기](notes/domain/semantic-layer/2026-11-10-semantic-layer.md) |
 | ODCS(Open Data Contract Standard) | Bitol 프로젝트가 공개한, 데이터 계약을 YAML 파일로 적는 표준입니다. | [데이터 계약(Data Contract) — 데이터를 넘기는 쪽과 받는 쪽의 약속](notes/domain/data-contracts/2026-11-11-data-contract.md) |
@@ -17,10 +19,12 @@
 | WAL(Write-Ahead Log) | PostgreSQL 이 데이터 파일을 바꾸기 전에 변경 내용을 먼저 적어 두는 기록 파일로, 계속 보관하면 시점 복구에 씁니다. | [복구 시간 목표 · 복구 시점 목표(RTO · RPO, Recovery Time · Point Objective) — 얼마나 빨리, 어디까지 되살릴지 정하기](notes/tech/incident-response/2026-11-16-rto-rpo.md) |
 | ZooKeeper | 분산 시스템의 설정 · 락 · 리더 선출을 맡는 Apache 오픈소스 조정 서비스입니다. | [펜싱 토큰(Fencing Token) — 락이 만료된 뒤 늦게 도착한 쓰기 막기](notes/tech/architecture/2026-11-12-fencing-token.md) |
 | dbt | 데이터 웨어하우스 안의 데이터를 SQL 로 가공 · 관리하는 오픈소스 도구로, dbt Semantic Layer 는 그 위에서 지표를 정의하는 기능입니다. | [시맨틱 레이어(Semantic Layer) — 지표 정의를 한 곳에 두기](notes/domain/semantic-layer/2026-11-10-semantic-layer.md) |
+| pg_fastload | pg_bulkload 를 바탕으로 읽기 · 파싱 단계를 병렬로 나눈 PostgreSQL 대량 적재 오픈소스 도구입니다. | [대량 적재(Bulk Loading) — PostgreSQL 에 수백만 행을 빠르게 넣기](notes/tech/high-volume-processing/2026-11-18-bulk-loading.md) |
 | 가비지 컬렉션(Garbage Collection) | JVM 같은 런타임이 쓰지 않는 메모리를 회수하는 작업으로, 이 동안 애플리케이션 스레드가 잠시 멈출 수 있습니다. | [펜싱 토큰(Fencing Token) — 락이 만료된 뒤 늦게 도착한 쓰기 막기](notes/tech/architecture/2026-11-12-fencing-token.md) |
 | 깨지는 변경(Breaking Change) | 컬럼 삭제나 자료형 변경처럼 기존 소비자가 고치지 않으면 실패하게 되는 변경입니다. | [데이터 계약(Data Contract) — 데이터를 넘기는 쪽과 받는 쪽의 약속](notes/domain/data-contracts/2026-11-11-data-contract.md) |
 | 다음 최선 행동(Next Best Action) | 고객마다 지금 할 수 있는 행동 후보 가운데 규칙과 점수로 하나를 골라 실행하는 의사결정 방식입니다. | [다음 최선 행동(Next Best Action) — 걸러내기와 점수 매기기로 지금 할 제안 하나 고르기](notes/domain/recommendation-systems/2026-11-17-next-best-action.md) |
 | 단조 증가(Monotonically Increasing) | 값이 줄지 않고 늘기만 하는 성질로, 토큰의 앞뒤를 비교하려면 이 성질이 필요합니다. | [펜싱 토큰(Fencing Token) — 락이 만료된 뒤 늦게 도착한 쓰기 막기](notes/tech/architecture/2026-11-12-fencing-token.md) |
+| 대량 적재(Bulk Loading) | 많은 행을 DB 에 한꺼번에 넣는 작업과, 그때 행마다 반복되는 비용을 줄이는 방법입니다. | [대량 적재(Bulk Loading) — PostgreSQL 에 수백만 행을 빠르게 넣기](notes/tech/high-volume-processing/2026-11-18-bulk-loading.md) |
 | 데이터 계보(Data Lineage) | 데이터가 어느 원천에서 어떤 작업을 거쳐 지금의 테이블 · 컬럼이 되었는지 기록한 연결 정보입니다. | [데이터 계보(Data Lineage) — 숫자가 어디서 왔는지 거슬러 찾기](notes/domain/data-quality-lineage/2026-11-13-data-lineage.md) |
 | 데이터 계약(Data Contract) | 데이터를 만드는 쪽이 쓰는 쪽에게 구조 · 품질 · 갱신 주기 · 책임자를 문서로 약속하고 기계로 검사하는 방식입니다. | [데이터 계약(Data Contract) — 데이터를 넘기는 쪽과 받는 쪽의 약속](notes/domain/data-contracts/2026-11-11-data-contract.md) |
 | 데이터 웨어하우스(Data Warehouse) | 여러 원천의 데이터를 분석용으로 모아 둔 저장소입니다. Snowflake 가 대표적인 클라우드 제품입니다. | [시맨틱 레이어(Semantic Layer) — 지표 정의를 한 곳에 두기](notes/domain/semantic-layer/2026-11-10-semantic-layer.md) |
@@ -36,18 +40,22 @@
 | 서비스 수준 약속(Service-Level Agreement) | 갱신 주기 · 가용성처럼 데이터나 서비스가 지켜야 할 수준을 정한 약속으로, 흔히 SLA 라고 줄여 씁니다. | [데이터 계약(Data Contract) — 데이터를 넘기는 쪽과 받는 쪽의 약속](notes/domain/data-contracts/2026-11-11-data-contract.md) |
 | 성향(Propensity) | 고객이 특정 제안을 받아들일 것으로 모델이 예측한 확률입니다. | [다음 최선 행동(Next Best Action) — 걸러내기와 점수 매기기로 지금 할 제안 하나 고르기](notes/domain/recommendation-systems/2026-11-17-next-best-action.md) |
 | 스키마(Schema) | 컬럼 이름 · 자료형 · 빈 값 허용 여부처럼 데이터의 구조를 정한 정의입니다. | [데이터 계약(Data Contract) — 데이터를 넘기는 쪽과 받는 쪽의 약속](notes/domain/data-contracts/2026-11-11-data-contract.md) |
+| 스테이징 테이블(Staging Table) | 원천 데이터를 본 테이블에 반영하기 전에 잠시 받아 두고 검사하는 테이블입니다. | [대량 적재(Bulk Loading) — PostgreSQL 에 수백만 행을 빠르게 넣기](notes/tech/high-volume-processing/2026-11-18-bulk-loading.md) |
 | 시맨틱 레이어(Semantic Layer) | 원천 테이블과 화면 사이에서 업무 용어와 지표의 정의를 한 곳에 모아 두는 계층입니다. | [시맨틱 레이어(Semantic Layer) — 지표 정의를 한 곳에 두기](notes/domain/semantic-layer/2026-11-10-semantic-layer.md) |
 | 시점 복구(Point-in-Time Recovery) | PITR 이라고 줄여 쓰며, 기본 백업에 변경 기록을 원하는 시각까지 재생해 그 시각의 상태로 되돌리는 복구 방식입니다. | [복구 시간 목표 · 복구 시점 목표(RTO · RPO, Recovery Time · Point Objective) — 얼마나 빨리, 어디까지 되살릴지 정하기](notes/tech/incident-response/2026-11-16-rto-rpo.md) |
 | 실행(Run) | 작업이 한 번 돈 기록으로, 시작 · 완료 · 실패 같은 상태를 가집니다. | [데이터 계보(Data Lineage) — 숫자가 어디서 왔는지 거슬러 찾기](notes/domain/data-quality-lineage/2026-11-13-data-lineage.md) |
 | 온톨로지(Ontology) | 어떤 분야의 개념과 개념 사이 관계를 정해 둔 체계로, 여기서는 업무 용어의 승인된 의미를 담습니다. | [시맨틱 레이어(Semantic Layer) — 지표 정의를 한 곳에 두기](notes/domain/semantic-layer/2026-11-10-semantic-layer.md) |
 | 웜 스탠바이(Warm Standby) | 작은 규모로 계속 돌아가는 사본을 복구 지역에 두고, 장애 때 규모만 키우는 재해 복구 방식입니다. | [복구 시간 목표 · 복구 시점 목표(RTO · RPO, Recovery Time · Point Objective) — 얼마나 빨리, 어디까지 되살릴지 정하기](notes/tech/incident-response/2026-11-16-rto-rpo.md) |
 | 자격 조건(Eligibility) | 법이나 업무상 반드시 지켜야 하는 조건으로, 어긋나는 후보를 가장 먼저 제외합니다. | [다음 최선 행동(Next Best Action) — 걸러내기와 점수 매기기로 지금 할 제안 하나 고르기](notes/domain/recommendation-systems/2026-11-17-next-best-action.md) |
+| 자동 커밋(Autocommit) | 문장 하나를 실행할 때마다 바로 커밋하는 동작으로, JDBC 연결의 기본값입니다. | [대량 적재(Bulk Loading) — PostgreSQL 에 수백만 행을 빠르게 넣기](notes/tech/high-volume-processing/2026-11-18-bulk-loading.md) |
 | 재해 복구(Disaster Recovery) | 서버 · 데이터센터 · 지역 단위의 큰 장애 뒤에 서비스와 데이터를 되살리는 계획과 절차입니다. | [복구 시간 목표 · 복구 시점 목표(RTO · RPO, Recovery Time · Point Objective) — 얼마나 빨리, 어디까지 되살릴지 정하기](notes/tech/incident-response/2026-11-16-rto-rpo.md) |
 | 적용성 조건(Applicability) | 고객이 이미 가진 상품처럼 지금 상황에 맞지 않는 후보를 제외하는 조건입니다. | [다음 최선 행동(Next Best Action) — 걸러내기와 점수 매기기로 지금 할 제안 하나 고르기](notes/domain/recommendation-systems/2026-11-17-next-best-action.md) |
 | 적합성 조건(Suitability) | 고객에게 실제로 도움이 되는 제안인지를 보고 맞지 않는 후보를 제외하는 조건입니다. | [다음 최선 행동(Next Best Action) — 걸러내기와 점수 매기기로 지금 할 제안 하나 고르기](notes/domain/recommendation-systems/2026-11-17-next-best-action.md) |
 | 접촉 정책(Contact Policy) | 노출 · 클릭 · 무시 횟수를 기간별로 세어 같은 행동을 일정 기간 보이지 않게 하는 규칙입니다. | [다음 최선 행동(Next Best Action) — 걸러내기와 점수 매기기로 지금 할 제안 하나 고르기](notes/domain/recommendation-systems/2026-11-17-next-best-action.md) |
+| 준비된 문장(Prepared Statement) | 한 번 파싱 · 계획한 문장을 값만 바꿔 여러 번 실행하는 방식입니다. | [대량 적재(Bulk Loading) — PostgreSQL 에 수백만 행을 빠르게 넣기](notes/tech/high-volume-processing/2026-11-18-bulk-loading.md) |
 | 중재(Arbitration) | 걸러 내기를 통과한 후보에 우선순위 점수를 매겨 맨 위 행동을 고르는 단계입니다. | [다음 최선 행동(Next Best Action) — 걸러내기와 점수 매기기로 지금 할 제안 하나 고르기](notes/domain/recommendation-systems/2026-11-17-next-best-action.md) |
 | 지표(Metric) | 매출 · 객단가처럼 원천 값을 집계해 업무 판단에 쓰는 숫자입니다. | [시맨틱 레이어(Semantic Layer) — 지표 정의를 한 곳에 두기](notes/domain/semantic-layer/2026-11-10-semantic-layer.md) |
+| 체크포인트(Checkpoint) | 메모리에서 바뀐 데이터 페이지를 모두 디스크에 기록하는 시점으로, 잦아지면 디스크 쓰기가 늘어납니다. | [대량 적재(Bulk Loading) — PostgreSQL 에 수백만 행을 빠르게 넣기](notes/tech/high-volume-processing/2026-11-18-bulk-loading.md) |
 | 캐시 미스(Cache Miss) | 요청한 값이 캐시에 없어 원래 저장소에서 다시 읽거나 계산해야 하는 상황입니다. | [캐시 스탬피드(Cache Stampede) — 만료 순간 몰리는 재계산 막기](notes/tech/overload/2026-11-10-cache-stampede.md) |
 | 커넥션 풀(Connection Pool) | DB 연결을 미리 몇 개 열어 두고 요청마다 빌려 쓰는 구조로, 개수가 정해져 있어 다 쓰이면 나머지 요청이 기다립니다. | [캐시 스탬피드(Cache Stampede) — 만료 순간 몰리는 재계산 막기](notes/tech/overload/2026-11-10-cache-stampede.md) |
 | 컬럼 수준 계보(Column-level Lineage) | 출력 컬럼 하나가 어느 입력 컬럼에서 어떤 변환을 거쳐 왔는지까지 기록한 계보입니다. | [데이터 계보(Data Lineage) — 숫자가 어디서 왔는지 거슬러 찾기](notes/domain/data-quality-lineage/2026-11-13-data-lineage.md) |
