@@ -164,7 +164,7 @@ pre.code { margin: 6px 0 0; padding: 14px 16px; border-radius: 8px; background: 
   var toggle = el("button", { type: "button", text: "모두 펼치기" });
   var resultNote = el("span", { class: "result-note" });
   app.appendChild(el("header", null, [
-    el("div", { class: "eyebrow", text: "주간 지식 노트 · 색인" }),
+    el("div", { class: "eyebrow", text: "지식 노트 · 색인" }),
     el("h1", { text: "지식 노트 색인" }),
     el("div", { class: "sub", text: "개념 풀이 " + concepts.length + "편 · 용어 " + termCount + "개 · " + (data.updatedOn || "") + " 갱신" }),
     el("div", { class: "tools" }, [search, toggle, resultNote])
@@ -184,7 +184,7 @@ pre.code { margin: 6px 0 0; padding: 14px 16px; border-radius: 8px; background: 
   });
   nav.appendChild(el("div", null, [el("ul", null, [
     el("li", null, [el("a", { href: "#terms" }, [el("span", { text: "용어 색인" }), el("span", { class: "n", text: String(termCount) })])]),
-    el("li", null, [el("a", { href: "#reports" }, [el("span", { text: "주간 보고서" }), el("span", { class: "n", text: String(weeks.length) })])])
+    el("li", null, [el("a", { href: "#reports" }, [el("span", { text: "회차 보고서" }), el("span", { class: "n", text: String(weeks.length) })])])
   ])]));
   app.appendChild(nav);
 
@@ -216,7 +216,7 @@ pre.code { margin: 6px 0 0; padding: 14px 16px; border-radius: 8px; background: 
         }
         var refs = (c.sources || []).map(function (s) { var u = safeUrl(s.url); return u ? el("li", null, [el("a", { href: u, target: "_blank", rel: "noopener noreferrer", text: s.label || hostOf(u) })]) : null; }).filter(Boolean);
         if (refs.length) body.appendChild(el("ol", { class: "refs" }, refs));
-        if (c.report) body.appendChild(el("span", { class: "from" }, ["실린 회차 · ", el("a", { href: c.report, text: c.date + " 주간 지식 노트" })]));
+        if (c.report) body.appendChild(el("span", { class: "from" }, ["실린 회차 · ", el("a", { href: c.report, text: c.date + " 지식 노트" })]));
         var det = el("details", { class: "concept", id: cid }, [
           el("summary", null, [el("span", { class: "t", text: c.title || "" }), el("span", { class: "d", text: c.date || "" }), c.oneLine ? el("span", { class: "o", text: c.oneLine }) : null]),
           body
@@ -242,10 +242,10 @@ pre.code { margin: 6px 0 0; padding: 14px 16px; border-radius: 8px; background: 
     }))) : el("p", { class: "none", text: "아직 용어 없음" })
   ]));
 
-  // 주간 보고서
+  // 회차 보고서
   var reps = weeks.slice().sort().reverse();
   main.appendChild(el("section", { id: "reports" }, [
-    el("h2", { text: "주간 보고서" }),
+    el("h2", { text: "회차 보고서" }),
     el("ul", { class: "reports" }, reps.map(function (d) { return el("li", null, [el("a", { href: "reports/" + d + ".html", text: d })]); }))
   ]));
   app.appendChild(main);

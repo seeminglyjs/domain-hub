@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>주간 지식 노트</title>
+<title>지식 노트</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-/* 배치: 주간 읽을거리 — 맨 위 핵심 3건, 그다음 개념 풀이 두 편(긴 글), 그 아래 도메인 · 기술 소식 해설 */
+/* 배치: 날짜별 읽을거리. 맨 위 핵심 3건, 그다음 개념 풀이 한 편(긴 글), 그 아래 도메인 · 기술 소식 해설 */
 :root {
   --bg: #f7f6f3;
   --surface: #ffffff;
@@ -73,7 +73,7 @@ h2 { margin: 0 0 14px; font-size: 13px; font-weight: 600; letter-spacing: .08em;
 .concept h3 { margin: 0; font-size: clamp(21px, 4vw, 26px); line-height: 1.35; font-weight: 700; letter-spacing: -.015em; text-wrap: balance; }
 .concept .oneline { margin: 0; font-size: 16px; line-height: 1.7; padding: 12px 16px; border-radius: 8px; background: var(--chip-bg); }
 .concept .related { margin: 0; font-size: 13px; color: var(--muted); }
-.concept .related::before { content: "이번 주 소식과 연결 · "; font-weight: 600; color: var(--fg); }
+.concept .related::before { content: "그날 소식과 연결 · "; font-weight: 600; color: var(--fg); }
 .toc { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
 .toc a { color: var(--muted); text-decoration: none; }
 .toc a:hover { color: var(--accent); text-decoration: underline; }
@@ -178,7 +178,7 @@ footer dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
   var domain = Array.isArray(data.domain) ? data.domain : [];
   var tech = Array.isArray(data.tech) ? data.tech : [];
 
-  document.title = "주간 지식 노트 " + data.date;
+  document.title = "지식 노트 " + data.date;
   var app = document.getElementById("app");
   app.textContent = "";
 
@@ -189,8 +189,8 @@ footer dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
     el("a", { href: "#tech", style: "--c:" + TRACK.tech.color }, [el("span", { class: "dot" }), el("span", { text: "기술 소식" }), el("b", { text: String(tech.length) })])
   ]);
   app.appendChild(el("header", null, [
-    el("div", { class: "eyebrow", text: "주간 지식 노트 · 도메인과 기술" }),
-    el("h1", { text: data.date + (data.weekday ? " (" + data.weekday + ")" : "") + " 주간 지식 노트" }),
+    el("div", { class: "eyebrow", text: "지식 노트 · 도메인과 기술" }),
+    el("h1", { text: data.date + (data.weekday ? " (" + data.weekday + ")" : "") + " 지식 노트" }),
     el("div", { class: "range" }, [
       el("span", { text: "대상 기간 " + (data.range ? data.range.from + " ~ " + data.range.to : "미기재") }),
       data.generatedAt ? el("span", { text: "작성 " + data.generatedAt }) : null,
@@ -201,7 +201,7 @@ footer dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
 
   // 핵심
   var hls = data.highlights || [];
-  var hlSection = el("section", null, [el("h2", { text: "이번 주 핵심" })]);
+  var hlSection = el("section", null, [el("h2", { text: "핵심" })]);
   if (hls.length) {
     hlSection.appendChild(el("ol", { class: "highlights" }, hls.slice(0, 3).map(function (h, i) {
       var m = TRACK[h.track] || { name: "", color: "var(--accent)" };
@@ -218,7 +218,7 @@ footer dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
   app.appendChild(hlSection);
 
   // 개념 풀이
-  var cSection = el("section", { id: "concepts", style: "scroll-margin-top:16px" }, [el("h2", { text: "이번 주 개념 풀이" })]);
+  var cSection = el("section", { id: "concepts", style: "scroll-margin-top:16px" }, [el("h2", { text: "개념 풀이" })]);
   if (!concepts.length) {
     cSection.appendChild(el("p", { class: "empty", text: "이번 회차 개념 풀이 없음" }));
   } else {
@@ -310,7 +310,7 @@ footer dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
     return block;
   }
   app.appendChild(el("section", { style: "display:grid;gap:36px" }, [
-    el("h2", { text: "이번 주 소식 해설", style: "margin:0" }),
+    el("h2", { text: "소식 해설", style: "margin:0" }),
     newsBlock("domain", "도메인 소식", TRACK.domain.full, domain, "kind", ["사례", "방법론", "제품", "연구"]),
     newsBlock("tech", "기술 소식", TRACK.tech.full, tech, "area", TECH_AREAS)
   ]));
