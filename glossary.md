@@ -9,7 +9,8 @@
 | BI 도구(Business Intelligence) | 데이터를 불러와 대시보드와 보고서를 만드는 도구입니다. Tableau · Looker 가 대표적입니다. | [시맨틱 레이어(Semantic Layer) — 지표 정의를 한 곳에 두기](notes/domain/semantic-layer/2026-11-10-semantic-layer.md) |
 | COPY | 파일이나 DB 연결로 받은 여러 행을 한 명령으로 테이블에 넣거나 꺼내는 PostgreSQL 전용 명령입니다. | [대량 적재(Bulk Loading) — PostgreSQL 에 수백만 행을 빠르게 넣기](notes/tech/high-volume-processing/2026-11-18-bulk-loading.md) |
 | DTO 프로젝션(DTO Projection) | 엔티티 전체 대신 화면에 필요한 열만 골라 전용 객체로 읽는 조회 방식입니다. | [요청 끝까지 열린 영속성 컨텍스트(OSIV, Open Session in View): Spring 이 DB 커넥션을 오래 잡는 이유](notes/tech/framework/2026-11-23-open-session-in-view.md) |
-| HikariCP | Spring Boot 가 기본으로 쓰는 JDBC 커넥션 풀 라이브러리입니다. | [요청 끝까지 열린 영속성 컨텍스트(OSIV, Open Session in View): Spring 이 DB 커넥션을 오래 잡는 이유](notes/tech/framework/2026-11-23-open-session-in-view.md) |
+| HikariCP | Spring Boot 가 기본으로 쓰는 JDBC 커넥션 풀 라이브러리입니다. | [요청 끝까지 열린 영속성 컨텍스트(OSIV, Open Session in View): Spring 이 DB 커넥션을 오래 잡는 이유](notes/tech/framework/2026-11-23-open-session-in-view.md) · [가상 스레드(Virtual Thread)와 고정(Pinning): 적은 OS 스레드로 많은 요청을 기다리게 하기](notes/tech/language/2026-11-25-virtual-threads-and-pinning.md) |
+| JFR | JDK Flight Recorder 의 약자이며, JVM 안에서 이벤트를 낮은 비용으로 기록하는 내장 도구입니다. | [가상 스레드(Virtual Thread)와 고정(Pinning): 적은 OS 스레드로 많은 요청을 기다리게 하기](notes/tech/language/2026-11-25-virtual-threads-and-pinning.md) |
 | Marquez | OpenLineage 이벤트를 받아 메타데이터를 모으고 보여 주는 LF AI & Data 재단의 참조 구현입니다. | [데이터 계보(Data Lineage) — 숫자가 어디서 왔는지 거슬러 찾기](notes/domain/data-quality-lineage/2026-11-13-data-lineage.md) |
 | MetricFlow | dbt Semantic Layer 에서 지표 정의를 읽고 요청에 맞는 조인과 집계를 처리하는 엔진입니다. | [시맨틱 레이어(Semantic Layer) — 지표 정의를 한 곳에 두기](notes/domain/semantic-layer/2026-11-10-semantic-layer.md) |
 | N+1 문제(N+1 Query Problem) | 목록 쿼리 한 번 뒤에 항목마다 추가 쿼리가 한 번씩 더 나가는 현상입니다. | [요청 끝까지 열린 영속성 컨텍스트(OSIV, Open Session in View): Spring 이 DB 커넥션을 오래 잡는 이유](notes/tech/framework/2026-11-23-open-session-in-view.md) |
@@ -30,7 +31,8 @@
 | pg_fastload | pg_bulkload 를 바탕으로 읽기 · 파싱 단계를 병렬로 나눈 PostgreSQL 대량 적재 오픈소스 도구입니다. | [대량 적재(Bulk Loading) — PostgreSQL 에 수백만 행을 빠르게 넣기](notes/tech/high-volume-processing/2026-11-18-bulk-loading.md) |
 | somaxconn | Linux 에서 listen 대기열 길이의 상한을 정하는 커널 설정 값(net.core.somaxconn)입니다. | [작업 스레드 풀과 연결 대기열(Worker Thread Pool · Accept Queue): Tomcat 이 요청을 받아 처리하기까지](notes/tech/server/2026-11-19-tomcat-thread-pool-accept-queue.md) |
 | 가비지 컬렉션(Garbage Collection) | JVM 같은 런타임이 쓰지 않는 메모리를 회수하는 작업으로, 이 동안 애플리케이션 스레드가 잠시 멈출 수 있습니다. | [펜싱 토큰(Fencing Token) — 락이 만료된 뒤 늦게 도착한 쓰기 막기](notes/tech/architecture/2026-11-12-fencing-token.md) |
-| 가상 스레드(Virtual Thread) | Java 21 부터 정식 기능이 된, 운영체제 스레드보다 훨씬 가볍게 많이 만들 수 있는 JVM 관리 스레드입니다. | [작업 스레드 풀과 연결 대기열(Worker Thread Pool · Accept Queue): Tomcat 이 요청을 받아 처리하기까지](notes/tech/server/2026-11-19-tomcat-thread-pool-accept-queue.md) |
+| 가상 스레드(Virtual Thread) | Java 21 부터 정식 기능이 된, 운영체제 스레드보다 훨씬 가볍게 많이 만들 수 있는 JVM 관리 스레드입니다. | [작업 스레드 풀과 연결 대기열(Worker Thread Pool · Accept Queue): Tomcat 이 요청을 받아 처리하기까지](notes/tech/server/2026-11-19-tomcat-thread-pool-accept-queue.md) · [가상 스레드(Virtual Thread)와 고정(Pinning): 적은 OS 스레드로 많은 요청을 기다리게 하기](notes/tech/language/2026-11-25-virtual-threads-and-pinning.md) |
+| 고정(Pinning) | 가상 스레드가 블로킹되어도 캐리어 스레드에서 내려오지 못하고 그 스레드를 붙잡은 상태입니다. | [가상 스레드(Virtual Thread)와 고정(Pinning): 적은 OS 스레드로 많은 요청을 기다리게 하기](notes/tech/language/2026-11-25-virtual-threads-and-pinning.md) |
 | 깨지는 변경(Breaking Change) | 컬럼 삭제나 자료형 변경처럼 기존 소비자가 고치지 않으면 실패하게 되는 변경입니다. | [데이터 계약(Data Contract) — 데이터를 넘기는 쪽과 받는 쪽의 약속](notes/domain/data-contracts/2026-11-11-data-contract.md) |
 | 네이티브 메모리 추적(NMT, Native Memory Tracking) | JVM 이 내부 영역별로 쓰는 네이티브 메모리를 집계해 jcmd 로 보여 주는 진단 기능입니다. | [컨테이너 메모리 제한(Container Memory Limit)과 JVM: 힙 밖 메모리(Off-Heap Memory)까지 계산해야 OOM Kill 을 피한다](notes/tech/system/2026-11-24-container-memory-limit-jvm-off-heap.md) |
 | 다음 최선 행동(Next Best Action) | 고객마다 지금 할 수 있는 행동 후보 가운데 규칙과 점수로 하나를 골라 실행하는 의사결정 방식입니다. | [다음 최선 행동(Next Best Action) — 걸러내기와 점수 매기기로 지금 할 제안 하나 고르기](notes/domain/recommendation-systems/2026-11-17-next-best-action.md) |
@@ -49,11 +51,13 @@
 | 마이그레이션(Migration) | DB 의 테이블 · 컬럼 구조를 바꾸는 스크립트와 그 적용 과정입니다. | [데이터 계약(Data Contract) — 데이터를 넘기는 쪽과 받는 쪽의 약속](notes/domain/data-contracts/2026-11-11-data-contract.md) |
 | 메타스페이스(Metaspace) | JVM 이 불러온 클래스의 구조 정보를 힙 바깥 네이티브 메모리에 담아 두는 영역입니다. | [컨테이너 메모리 제한(Container Memory Limit)과 JVM: 힙 밖 메모리(Off-Heap Memory)까지 계산해야 OOM Kill 을 피한다](notes/tech/system/2026-11-24-container-memory-limit-jvm-off-heap.md) |
 | 모델 계약(Model Contract) | dbt 에서 모델 결과의 컬럼 이름 · 자료형 · 제약을 약속하고, 맞지 않으면 빌드를 실패시키는 설정입니다. | [데이터 계약(Data Contract) — 데이터를 넘기는 쪽과 받는 쪽의 약속](notes/domain/data-contracts/2026-11-11-data-contract.md) |
+| 문맥 전환(Context Switch) | OS 가 CPU 에서 실행할 스레드를 바꾸며 레지스터와 상태를 저장하고 복원하는 작업입니다. | [가상 스레드(Virtual Thread)와 고정(Pinning): 적은 OS 스레드로 많은 요청을 기다리게 하기](notes/tech/language/2026-11-25-virtual-threads-and-pinning.md) |
 | 복구 시간 목표(Recovery Time Objective) | RTO 라고 줄여 쓰며, 서비스가 끊긴 때부터 다시 열릴 때까지 허용할 수 있는 최대 시간입니다. | [복구 시간 목표 · 복구 시점 목표(RTO · RPO, Recovery Time · Point Objective) — 얼마나 빨리, 어디까지 되살릴지 정하기](notes/tech/incident-response/2026-11-16-rto-rpo.md) |
 | 복구 시점 목표(Recovery Point Objective) | RPO 라고 줄여 쓰며, 마지막 복구 지점 이후 잃어도 되는 데이터의 최대 시간 범위입니다. | [복구 시간 목표 · 복구 시점 목표(RTO · RPO, Recovery Time · Point Objective) — 얼마나 빨리, 어디까지 되살릴지 정하기](notes/tech/incident-response/2026-11-16-rto-rpo.md) |
 | 분산 락(Distributed Lock) | 여러 서버 가운데 한 번에 하나만 어떤 작업을 하도록 공유 저장소에 거는 잠금입니다. | [펜싱 토큰(Fencing Token) — 락이 만료된 뒤 늦게 도착한 쓰기 막기](notes/tech/architecture/2026-11-12-fencing-token.md) |
 | 서비스 수준 약속(Service-Level Agreement) | 갱신 주기 · 가용성처럼 데이터나 서비스가 지켜야 할 수준을 정한 약속으로, 흔히 SLA 라고 줄여 씁니다. | [데이터 계약(Data Contract) — 데이터를 넘기는 쪽과 받는 쪽의 약속](notes/domain/data-contracts/2026-11-11-data-contract.md) |
 | 성향(Propensity) | 고객이 특정 제안을 받아들일 것으로 모델이 예측한 확률입니다. | [다음 최선 행동(Next Best Action) — 걸러내기와 점수 매기기로 지금 할 제안 하나 고르기](notes/domain/recommendation-systems/2026-11-17-next-best-action.md) |
+| 세마포어(Semaphore) | 동시에 들어갈 수 있는 작업 수를 허가 개수로 제한하는 동기화 도구입니다. | [가상 스레드(Virtual Thread)와 고정(Pinning): 적은 OS 스레드로 많은 요청을 기다리게 하기](notes/tech/language/2026-11-25-virtual-threads-and-pinning.md) |
 | 스키마(Schema) | 컬럼 이름 · 자료형 · 빈 값 허용 여부처럼 데이터의 구조를 정한 정의입니다. | [데이터 계약(Data Contract) — 데이터를 넘기는 쪽과 받는 쪽의 약속](notes/domain/data-contracts/2026-11-11-data-contract.md) |
 | 스테이징 테이블(Staging Table) | 원천 데이터를 본 테이블에 반영하기 전에 잠시 받아 두고 검사하는 테이블입니다. | [대량 적재(Bulk Loading) — PostgreSQL 에 수백만 행을 빠르게 넣기](notes/tech/high-volume-processing/2026-11-18-bulk-loading.md) |
 | 시맨틱 레이어(Semantic Layer) | 원천 테이블과 화면 사이에서 업무 용어와 지표의 정의를 한 곳에 모아 두는 계층입니다. | [시맨틱 레이어(Semantic Layer) — 지표 정의를 한 곳에 두기](notes/domain/semantic-layer/2026-11-10-semantic-layer.md) |
@@ -78,6 +82,7 @@
 | 지표(Metric) | 매출 · 객단가처럼 원천 값을 집계해 업무 판단에 쓰는 숫자입니다. | [시맨틱 레이어(Semantic Layer) — 지표 정의를 한 곳에 두기](notes/domain/semantic-layer/2026-11-10-semantic-layer.md) |
 | 직접 버퍼(Direct Buffer) | NIO 가 입출력 복사를 줄이려고 힙 바깥에 잡는 메모리 버퍼입니다. | [컨테이너 메모리 제한(Container Memory Limit)과 JVM: 힙 밖 메모리(Off-Heap Memory)까지 계산해야 OOM Kill 을 피한다](notes/tech/system/2026-11-24-container-memory-limit-jvm-off-heap.md) |
 | 체크포인트(Checkpoint) | 메모리에서 바뀐 데이터 페이지를 모두 디스크에 기록하는 시점으로, 잦아지면 디스크 쓰기가 늘어납니다. | [대량 적재(Bulk Loading) — PostgreSQL 에 수백만 행을 빠르게 넣기](notes/tech/high-volume-processing/2026-11-18-bulk-loading.md) |
+| 캐리어 스레드(Carrier Thread) | 가상 스레드를 실제로 실행하는 플랫폼 스레드이며, 기본적으로 CPU 코어 수만큼 있습니다. | [가상 스레드(Virtual Thread)와 고정(Pinning): 적은 OS 스레드로 많은 요청을 기다리게 하기](notes/tech/language/2026-11-25-virtual-threads-and-pinning.md) |
 | 캐시 미스(Cache Miss) | 요청한 값이 캐시에 없어 원래 저장소에서 다시 읽거나 계산해야 하는 상황입니다. | [캐시 스탬피드(Cache Stampede) — 만료 순간 몰리는 재계산 막기](notes/tech/overload/2026-11-10-cache-stampede.md) |
 | 커넥션 풀(Connection Pool) | DB 연결을 미리 몇 개 열어 두고 요청마다 빌려 쓰는 구조로, 개수가 정해져 있어 다 쓰이면 나머지 요청이 기다립니다. | [캐시 스탬피드(Cache Stampede) — 만료 순간 몰리는 재계산 막기](notes/tech/overload/2026-11-10-cache-stampede.md) · [요청 끝까지 열린 영속성 컨텍스트(OSIV, Open Session in View): Spring 이 DB 커넥션을 오래 잡는 이유](notes/tech/framework/2026-11-23-open-session-in-view.md) |
 | 컨테이너 메모리 제한(Container Memory Limit) | 컨테이너 하나가 쓸 수 있는 메모리 상한이며, 넘으면 커널이 그 안의 프로세스를 강제로 종료합니다. | [컨테이너 메모리 제한(Container Memory Limit)과 JVM: 힙 밖 메모리(Off-Heap Memory)까지 계산해야 OOM Kill 을 피한다](notes/tech/system/2026-11-24-container-memory-limit-jvm-off-heap.md) |
@@ -90,6 +95,7 @@
 | 패싯(Facet) | OpenLineage 에서 데이터셋 · 작업 · 실행에 붙이는 추가 메타데이터 조각입니다. | [데이터 계보(Data Lineage) — 숫자가 어디서 왔는지 거슬러 찾기](notes/domain/data-quality-lineage/2026-11-13-data-lineage.md) |
 | 펜싱 토큰(Fencing Token) | 락을 내줄 때마다 커지는 번호로, 저장소가 이미 본 번호보다 작은 번호의 쓰기를 거절하는 데 씁니다. | [펜싱 토큰(Fencing Token) — 락이 만료된 뒤 늦게 도착한 쓰기 막기](notes/tech/architecture/2026-11-12-fencing-token.md) |
 | 폴러(Poller) | Tomcat NIO 커넥터에서 여러 연결을 지켜보다가 데이터가 도착한 연결만 작업 스레드에 넘기는 스레드입니다. | [작업 스레드 풀과 연결 대기열(Worker Thread Pool · Accept Queue): Tomcat 이 요청을 받아 처리하기까지](notes/tech/server/2026-11-19-tomcat-thread-pool-accept-queue.md) |
+| 플랫폼 스레드(Platform Thread) | OS 스레드 하나를 1:1 로 감싸는 Java 의 기존 스레드입니다. | [가상 스레드(Virtual Thread)와 고정(Pinning): 적은 OS 스레드로 많은 요청을 기다리게 하기](notes/tech/language/2026-11-25-virtual-threads-and-pinning.md) |
 | 합의 알고리즘(Consensus Algorithm) | 일부 서버가 죽거나 끊겨도 여러 서버가 같은 값에 동의하게 하는 절차로, Raft · Paxos 가 대표적입니다. | [펜싱 토큰(Fencing Token) — 락이 만료된 뒤 늦게 도착한 쓰기 막기](notes/tech/architecture/2026-11-12-fencing-token.md) |
 | 확률적 조기 만료(Probabilistic Early Expiration) | 만료 시각에 가까울수록 높아지는 확률로 각 요청이 미리 재계산할지 정하게 해 재계산 시점을 흩어 놓는 방법입니다. | [캐시 스탬피드(Cache Stampede) — 만료 순간 몰리는 재계산 막기](notes/tech/overload/2026-11-10-cache-stampede.md) |
 | 힙 밖 메모리(Off-Heap Memory) | JVM 프로세스가 힙 바깥에서 쓰는 메모리로 Metaspace · 코드 캐시 · 스레드 스택 · 직접 버퍼 등을 포함합니다. | [컨테이너 메모리 제한(Container Memory Limit)과 JVM: 힙 밖 메모리(Off-Heap Memory)까지 계산해야 OOM Kill 을 피한다](notes/tech/system/2026-11-24-container-memory-limit-jvm-off-heap.md) |
