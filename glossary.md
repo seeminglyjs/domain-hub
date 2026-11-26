@@ -30,9 +30,11 @@
 | dbt | 데이터 웨어하우스 안의 데이터를 SQL 로 가공 · 관리하는 오픈소스 도구로, dbt Semantic Layer 는 그 위에서 지표를 정의하는 기능입니다. | [시맨틱 레이어(Semantic Layer) — 지표 정의를 한 곳에 두기](notes/domain/semantic-layer/2026-11-10-semantic-layer.md) |
 | pg_fastload | pg_bulkload 를 바탕으로 읽기 · 파싱 단계를 병렬로 나눈 PostgreSQL 대량 적재 오픈소스 도구입니다. | [대량 적재(Bulk Loading) — PostgreSQL 에 수백만 행을 빠르게 넣기](notes/tech/high-volume-processing/2026-11-18-bulk-loading.md) |
 | somaxconn | Linux 에서 listen 대기열 길이의 상한을 정하는 커널 설정 값(net.core.somaxconn)입니다. | [작업 스레드 풀과 연결 대기열(Worker Thread Pool · Accept Queue): Tomcat 이 요청을 받아 처리하기까지](notes/tech/server/2026-11-19-tomcat-thread-pool-accept-queue.md) |
+| vLLM | PagedAttention 으로 KV 캐시를 작은 블록 단위로 관리하는 오픈소스 언어 모델 서빙 엔진입니다. | [KV 캐시(KV Cache): 문맥이 길어질수록 GPU 메모리가 줄어드는 이유](notes/tech/ai-ml/2026-11-26-kv-cache-gpu-memory.md) |
 | 가비지 컬렉션(Garbage Collection) | JVM 같은 런타임이 쓰지 않는 메모리를 회수하는 작업으로, 이 동안 애플리케이션 스레드가 잠시 멈출 수 있습니다. | [펜싱 토큰(Fencing Token) — 락이 만료된 뒤 늦게 도착한 쓰기 막기](notes/tech/architecture/2026-11-12-fencing-token.md) |
 | 가상 스레드(Virtual Thread) | Java 21 부터 정식 기능이 된, 운영체제 스레드보다 훨씬 가볍게 많이 만들 수 있는 JVM 관리 스레드입니다. | [작업 스레드 풀과 연결 대기열(Worker Thread Pool · Accept Queue): Tomcat 이 요청을 받아 처리하기까지](notes/tech/server/2026-11-19-tomcat-thread-pool-accept-queue.md) · [가상 스레드(Virtual Thread)와 고정(Pinning): 적은 OS 스레드로 많은 요청을 기다리게 하기](notes/tech/language/2026-11-25-virtual-threads-and-pinning.md) |
 | 고정(Pinning) | 가상 스레드가 블로킹되어도 캐리어 스레드에서 내려오지 못하고 그 스레드를 붙잡은 상태입니다. | [가상 스레드(Virtual Thread)와 고정(Pinning): 적은 OS 스레드로 많은 요청을 기다리게 하기](notes/tech/language/2026-11-25-virtual-threads-and-pinning.md) |
+| 그룹 질의 어텐션(GQA, Grouped-Query Attention) | 여러 질의 헤드가 키·값 헤드 하나를 함께 써서 키·값 헤드 수를 줄이는 어텐션 방식입니다. | [KV 캐시(KV Cache): 문맥이 길어질수록 GPU 메모리가 줄어드는 이유](notes/tech/ai-ml/2026-11-26-kv-cache-gpu-memory.md) |
 | 깨지는 변경(Breaking Change) | 컬럼 삭제나 자료형 변경처럼 기존 소비자가 고치지 않으면 실패하게 되는 변경입니다. | [데이터 계약(Data Contract) — 데이터를 넘기는 쪽과 받는 쪽의 약속](notes/domain/data-contracts/2026-11-11-data-contract.md) |
 | 네이티브 메모리 추적(NMT, Native Memory Tracking) | JVM 이 내부 영역별로 쓰는 네이티브 메모리를 집계해 jcmd 로 보여 주는 진단 기능입니다. | [컨테이너 메모리 제한(Container Memory Limit)과 JVM: 힙 밖 메모리(Off-Heap Memory)까지 계산해야 OOM Kill 을 피한다](notes/tech/system/2026-11-24-container-memory-limit-jvm-off-heap.md) |
 | 다음 최선 행동(Next Best Action) | 고객마다 지금 할 수 있는 행동 후보 가운데 규칙과 점수로 하나를 골라 실행하는 의사결정 방식입니다. | [다음 최선 행동(Next Best Action) — 걸러내기와 점수 매기기로 지금 할 제안 하나 고르기](notes/domain/recommendation-systems/2026-11-17-next-best-action.md) |
@@ -46,6 +48,7 @@
 | 도그파일링(Dog-piling) | 캐시 스탬피드의 다른 이름으로, 여러 요청이 한 자원에 한꺼번에 몰리는 모습을 가리킵니다. | [캐시 스탬피드(Cache Stampede) — 만료 순간 몰리는 재계산 막기](notes/tech/overload/2026-11-10-cache-stampede.md) |
 | 도메인 스튜어드(Domain Steward) | 한 업무 영역의 용어와 지표 정의를 승인하고 관리하는 담당자입니다. | [시맨틱 레이어(Semantic Layer) — 지표 정의를 한 곳에 두기](notes/domain/semantic-layer/2026-11-10-semantic-layer.md) |
 | 동결(Freezing) | 충분히 오래된 행을 모든 트랜잭션에게 보이는 상태로 표시해 트랜잭션 ID 재사용에 대비하는 작업입니다. | [다중 버전 동시성 제어(MVCC, Multi-Version Concurrency Control) 와 VACUUM: PostgreSQL 에 죽은 튜플(Dead Tuple)이 쌓이는 이유](notes/tech/database/2026-11-20-postgresql-mvcc-vacuum-dead-tuples.md) |
+| 디코드(Decode) | 토큰을 하나씩 만들며 KV 캐시를 한 칸씩 늘려 가는 단계입니다. | [KV 캐시(KV Cache): 문맥이 길어질수록 GPU 메모리가 줄어드는 이유](notes/tech/ai-ml/2026-11-26-kv-cache-gpu-memory.md) |
 | 리스(Lease) | 정해진 시간이 지나면 저절로 풀리는 락으로, 락을 쥔 서버가 죽어도 영원히 잠기지 않게 합니다. | [펜싱 토큰(Fencing Token) — 락이 만료된 뒤 늦게 도착한 쓰기 막기](notes/tech/architecture/2026-11-12-fencing-token.md) |
 | 리틀의 법칙(Little's Law) | 시스템 안의 평균 요청 수는 평균 도착률과 평균 체류 시간의 곱과 같다는 대기 이론의 관계식입니다. | [작업 스레드 풀과 연결 대기열(Worker Thread Pool · Accept Queue): Tomcat 이 요청을 받아 처리하기까지](notes/tech/server/2026-11-19-tomcat-thread-pool-accept-queue.md) |
 | 마이그레이션(Migration) | DB 의 테이블 · 컬럼 구조를 바꾸는 스크립트와 그 적용 과정입니다. | [데이터 계약(Data Contract) — 데이터를 넘기는 쪽과 받는 쪽의 약속](notes/domain/data-contracts/2026-11-11-data-contract.md) |
@@ -56,6 +59,7 @@
 | 복구 시점 목표(Recovery Point Objective) | RPO 라고 줄여 쓰며, 마지막 복구 지점 이후 잃어도 되는 데이터의 최대 시간 범위입니다. | [복구 시간 목표 · 복구 시점 목표(RTO · RPO, Recovery Time · Point Objective) — 얼마나 빨리, 어디까지 되살릴지 정하기](notes/tech/incident-response/2026-11-16-rto-rpo.md) |
 | 분산 락(Distributed Lock) | 여러 서버 가운데 한 번에 하나만 어떤 작업을 하도록 공유 저장소에 거는 잠금입니다. | [펜싱 토큰(Fencing Token) — 락이 만료된 뒤 늦게 도착한 쓰기 막기](notes/tech/architecture/2026-11-12-fencing-token.md) |
 | 서비스 수준 약속(Service-Level Agreement) | 갱신 주기 · 가용성처럼 데이터나 서비스가 지켜야 할 수준을 정한 약속으로, 흔히 SLA 라고 줄여 씁니다. | [데이터 계약(Data Contract) — 데이터를 넘기는 쪽과 받는 쪽의 약속](notes/domain/data-contracts/2026-11-11-data-contract.md) |
+| 선점(Preemption) | KV 캐시 공간이 모자랄 때 서빙 엔진이 진행 중인 요청을 멈추고 공간을 비우는 동작입니다. | [KV 캐시(KV Cache): 문맥이 길어질수록 GPU 메모리가 줄어드는 이유](notes/tech/ai-ml/2026-11-26-kv-cache-gpu-memory.md) |
 | 성향(Propensity) | 고객이 특정 제안을 받아들일 것으로 모델이 예측한 확률입니다. | [다음 최선 행동(Next Best Action) — 걸러내기와 점수 매기기로 지금 할 제안 하나 고르기](notes/domain/recommendation-systems/2026-11-17-next-best-action.md) |
 | 세마포어(Semaphore) | 동시에 들어갈 수 있는 작업 수를 허가 개수로 제한하는 동기화 도구입니다. | [가상 스레드(Virtual Thread)와 고정(Pinning): 적은 OS 스레드로 많은 요청을 기다리게 하기](notes/tech/language/2026-11-25-virtual-threads-and-pinning.md) |
 | 스키마(Schema) | 컬럼 이름 · 자료형 · 빈 값 허용 여부처럼 데이터의 구조를 정한 정의입니다. | [데이터 계약(Data Contract) — 데이터를 넘기는 쪽과 받는 쪽의 약속](notes/domain/data-contracts/2026-11-11-data-contract.md) |
@@ -63,6 +67,7 @@
 | 시맨틱 레이어(Semantic Layer) | 원천 테이블과 화면 사이에서 업무 용어와 지표의 정의를 한 곳에 모아 두는 계층입니다. | [시맨틱 레이어(Semantic Layer) — 지표 정의를 한 곳에 두기](notes/domain/semantic-layer/2026-11-10-semantic-layer.md) |
 | 시점 복구(Point-in-Time Recovery) | PITR 이라고 줄여 쓰며, 기본 백업에 변경 기록을 원하는 시각까지 재생해 그 시각의 상태로 되돌리는 복구 방식입니다. | [복구 시간 목표 · 복구 시점 목표(RTO · RPO, Recovery Time · Point Objective) — 얼마나 빨리, 어디까지 되살릴지 정하기](notes/tech/incident-response/2026-11-16-rto-rpo.md) |
 | 실행(Run) | 작업이 한 번 돈 기록으로, 시작 · 완료 · 실패 같은 상태를 가집니다. | [데이터 계보(Data Lineage) — 숫자가 어디서 왔는지 거슬러 찾기](notes/domain/data-quality-lineage/2026-11-13-data-lineage.md) |
+| 어텐션(Attention) | 새 토큰이 앞 토큰들 가운데 어느 것을 얼마나 참고할지 계산하는 트랜스포머의 핵심 층입니다. | [KV 캐시(KV Cache): 문맥이 길어질수록 GPU 메모리가 줄어드는 이유](notes/tech/ai-ml/2026-11-26-kv-cache-gpu-memory.md) |
 | 연결 대기열(Accept Queue) | 운영체제가 연결 수립을 끝냈지만 서버 프로그램이 아직 받아 가지 않은 연결을 쌓아 두는 자리입니다. | [작업 스레드 풀과 연결 대기열(Worker Thread Pool · Accept Queue): Tomcat 이 요청을 받아 처리하기까지](notes/tech/server/2026-11-19-tomcat-thread-pool-accept-queue.md) |
 | 영속성 컨텍스트(Persistence Context) | JPA 가 읽어 온 엔티티를 기억하고 변경을 추적하는 작업 공간입니다. | [요청 끝까지 열린 영속성 컨텍스트(OSIV, Open Session in View): Spring 이 DB 커넥션을 오래 잡는 이유](notes/tech/framework/2026-11-23-open-session-in-view.md) |
 | 온톨로지(Ontology) | 어떤 분야의 개념과 개념 사이 관계를 정해 둔 체계로, 여기서는 업무 용어의 승인된 의미를 담습니다. | [시맨틱 레이어(Semantic Layer) — 지표 정의를 한 곳에 두기](notes/domain/semantic-layer/2026-11-10-semantic-layer.md) |
@@ -89,12 +94,14 @@
 | 컬럼 수준 계보(Column-level Lineage) | 출력 컬럼 하나가 어느 입력 컬럼에서 어떤 변환을 거쳐 왔는지까지 기록한 계보입니다. | [데이터 계보(Data Lineage) — 숫자가 어디서 왔는지 거슬러 찾기](notes/domain/data-quality-lineage/2026-11-13-data-lineage.md) |
 | 코드 캐시(Code Cache) | JIT 컴파일러가 바이트코드를 기계어로 바꾼 결과를 담는 영역이며 JDK 21 기본 상한은 240MB 입니다. | [컨테이너 메모리 제한(Container Memory Limit)과 JVM: 힙 밖 메모리(Off-Heap Memory)까지 계산해야 OOM Kill 을 피한다](notes/tech/system/2026-11-24-container-memory-limit-jvm-off-heap.md) |
 | 테이블 부풀음(Table Bloat) | 죽은 튜플과 회수된 빈 공간 때문에 테이블 · 인덱스 파일이 실제 데이터보다 커진 상태입니다. | [다중 버전 동시성 제어(MVCC, Multi-Version Concurrency Control) 와 VACUUM: PostgreSQL 에 죽은 튜플(Dead Tuple)이 쌓이는 이유](notes/tech/database/2026-11-20-postgresql-mvcc-vacuum-dead-tuples.md) |
+| 토큰(Token) | 모델이 글을 나누어 처리하는 단위이며, 한 단어가 여러 토큰으로 나뉘기도 합니다. | [KV 캐시(KV Cache): 문맥이 길어질수록 GPU 메모리가 줄어드는 이유](notes/tech/ai-ml/2026-11-26-kv-cache-gpu-memory.md) |
 | 트랜잭션 ID 랩어라운드(Transaction ID Wraparound) | 32비트 트랜잭션 ID 가 한 바퀴 돌아 오래된 행이 미래의 것으로 잘못 보일 수 있는 상황입니다. | [다중 버전 동시성 제어(MVCC, Multi-Version Concurrency Control) 와 VACUUM: PostgreSQL 에 죽은 튜플(Dead Tuple)이 쌓이는 이유](notes/tech/database/2026-11-20-postgresql-mvcc-vacuum-dead-tuples.md) |
 | 특징값(Feature) | 모델에 넣는 입력값으로, 최근 30일 평균 잔액처럼 원천 데이터를 가공해 만듭니다. | [다음 최선 행동(Next Best Action) — 걸러내기와 점수 매기기로 지금 할 제안 하나 고르기](notes/domain/recommendation-systems/2026-11-17-next-best-action.md) |
 | 파일럿 라이트(Pilot Light) | DB 같은 핵심 자원만 복구 지역에 켜 두고, 애플리케이션 서버는 장애 때 켜는 재해 복구 방식입니다. | [복구 시간 목표 · 복구 시점 목표(RTO · RPO, Recovery Time · Point Objective) — 얼마나 빨리, 어디까지 되살릴지 정하기](notes/tech/incident-response/2026-11-16-rto-rpo.md) |
 | 패싯(Facet) | OpenLineage 에서 데이터셋 · 작업 · 실행에 붙이는 추가 메타데이터 조각입니다. | [데이터 계보(Data Lineage) — 숫자가 어디서 왔는지 거슬러 찾기](notes/domain/data-quality-lineage/2026-11-13-data-lineage.md) |
 | 펜싱 토큰(Fencing Token) | 락을 내줄 때마다 커지는 번호로, 저장소가 이미 본 번호보다 작은 번호의 쓰기를 거절하는 데 씁니다. | [펜싱 토큰(Fencing Token) — 락이 만료된 뒤 늦게 도착한 쓰기 막기](notes/tech/architecture/2026-11-12-fencing-token.md) |
 | 폴러(Poller) | Tomcat NIO 커넥터에서 여러 연결을 지켜보다가 데이터가 도착한 연결만 작업 스레드에 넘기는 스레드입니다. | [작업 스레드 풀과 연결 대기열(Worker Thread Pool · Accept Queue): Tomcat 이 요청을 받아 처리하기까지](notes/tech/server/2026-11-19-tomcat-thread-pool-accept-queue.md) |
+| 프리필(Prefill) | 입력 프롬프트 전체를 한 번에 계산해 KV 캐시를 채우는 단계이며, 첫 토큰이 나오기까지의 지연을 좌우합니다. | [KV 캐시(KV Cache): 문맥이 길어질수록 GPU 메모리가 줄어드는 이유](notes/tech/ai-ml/2026-11-26-kv-cache-gpu-memory.md) |
 | 플랫폼 스레드(Platform Thread) | OS 스레드 하나를 1:1 로 감싸는 Java 의 기존 스레드입니다. | [가상 스레드(Virtual Thread)와 고정(Pinning): 적은 OS 스레드로 많은 요청을 기다리게 하기](notes/tech/language/2026-11-25-virtual-threads-and-pinning.md) |
 | 합의 알고리즘(Consensus Algorithm) | 일부 서버가 죽거나 끊겨도 여러 서버가 같은 값에 동의하게 하는 절차로, Raft · Paxos 가 대표적입니다. | [펜싱 토큰(Fencing Token) — 락이 만료된 뒤 늦게 도착한 쓰기 막기](notes/tech/architecture/2026-11-12-fencing-token.md) |
 | 확률적 조기 만료(Probabilistic Early Expiration) | 만료 시각에 가까울수록 높아지는 확률로 각 요청이 미리 재계산할지 정하게 해 재계산 시점을 흩어 놓는 방법입니다. | [캐시 스탬피드(Cache Stampede) — 만료 순간 몰리는 재계산 막기](notes/tech/overload/2026-11-10-cache-stampede.md) |
