@@ -18,6 +18,8 @@
 | OpenLineage | 작업 실행 중에 계보 정보를 주고받는 형식을 정한 오픈 표준으로, LF AI & Data 재단의 졸업 프로젝트입니다. | [데이터 계보(Data Lineage) — 숫자가 어디서 왔는지 거슬러 찾기](notes/domain/data-quality-lineage/2026-11-13-data-lineage.md) |
 | Paketo | 소스 코드에서 컨테이너 이미지를 만드는 Cloud Native Buildpacks 구현이며 Java 이미지에 메모리 계산기를 넣습니다. | [컨테이너 메모리 제한(Container Memory Limit)과 JVM: 힙 밖 메모리(Off-Heap Memory)까지 계산해야 OOM Kill 을 피한다](notes/tech/system/2026-11-24-container-memory-limit-jvm-off-heap.md) |
 | REPACK | PostgreSQL 19 에서 VACUUM FULL 과 CLUSTER 를 대체하는 명령이며, CONCURRENTLY 옵션으로 읽기 · 쓰기를 막지 않고 테이블을 다시 씁니다. | [다중 버전 동시성 제어(MVCC, Multi-Version Concurrency Control) 와 VACUUM: PostgreSQL 에 죽은 튜플(Dead Tuple)이 쌓이는 이유](notes/tech/database/2026-11-20-postgresql-mvcc-vacuum-dead-tuples.md) |
+| SIGKILL | 프로세스를 즉시 강제로 끝내는 신호이며, 프로세스가 받아서 처리할 수 없습니다. | [그레이스풀 셧다운(Graceful Shutdown): 배포 중에 처리 중인 요청을 끊지 않고 서버 내리기](notes/tech/service-operations/2026-11-27-graceful-shutdown.md) |
+| SIGTERM | 프로세스에 정상 종료를 요청하는 신호이며, 프로세스가 받아서 정리 작업을 할 수 있습니다. | [그레이스풀 셧다운(Graceful Shutdown): 배포 중에 처리 중인 요청을 끊지 않고 서버 내리기](notes/tech/service-operations/2026-11-27-graceful-shutdown.md) |
 | ShedLock | 정기 작업이 여러 서버에서 겹쳐 돌지 않도록 DB · Redis 등에 락을 거는 Java 라이브러리입니다. | [펜싱 토큰(Fencing Token) — 락이 만료된 뒤 늦게 도착한 쓰기 막기](notes/tech/architecture/2026-11-12-fencing-token.md) |
 | TTL(Time To Live) | 캐시 항목이 저장된 뒤 만료될 때까지의 시간입니다. | [캐시 스탬피드(Cache Stampede) — 만료 순간 몰리는 재계산 막기](notes/tech/overload/2026-11-10-cache-stampede.md) |
 | Tomcat | Spring Boot 웹 애플리케이션이 기본으로 내장하는 Java 웹 서버이자 서블릿 컨테이너입니다. | [작업 스레드 풀과 연결 대기열(Worker Thread Pool · Accept Queue): Tomcat 이 요청을 받아 처리하기까지](notes/tech/server/2026-11-19-tomcat-thread-pool-accept-queue.md) |
@@ -29,11 +31,13 @@
 | cgroup(Control Group) | 리눅스 커널이 프로세스 묶음마다 CPU · 메모리 같은 자원 사용량을 제한하고 집계하는 기능입니다. | [컨테이너 메모리 제한(Container Memory Limit)과 JVM: 힙 밖 메모리(Off-Heap Memory)까지 계산해야 OOM Kill 을 피한다](notes/tech/system/2026-11-24-container-memory-limit-jvm-off-heap.md) |
 | dbt | 데이터 웨어하우스 안의 데이터를 SQL 로 가공 · 관리하는 오픈소스 도구로, dbt Semantic Layer 는 그 위에서 지표를 정의하는 기능입니다. | [시맨틱 레이어(Semantic Layer) — 지표 정의를 한 곳에 두기](notes/domain/semantic-layer/2026-11-10-semantic-layer.md) |
 | pg_fastload | pg_bulkload 를 바탕으로 읽기 · 파싱 단계를 병렬로 나눈 PostgreSQL 대량 적재 오픈소스 도구입니다. | [대량 적재(Bulk Loading) — PostgreSQL 에 수백만 행을 빠르게 넣기](notes/tech/high-volume-processing/2026-11-18-bulk-loading.md) |
+| preStop 훅(preStop Hook) | Kubernetes 가 컨테이너에 종료 신호를 보내기 전에 컨테이너 안에서 실행하는 명령이나 HTTP 호출입니다. | [그레이스풀 셧다운(Graceful Shutdown): 배포 중에 처리 중인 요청을 끊지 않고 서버 내리기](notes/tech/service-operations/2026-11-27-graceful-shutdown.md) |
 | somaxconn | Linux 에서 listen 대기열 길이의 상한을 정하는 커널 설정 값(net.core.somaxconn)입니다. | [작업 스레드 풀과 연결 대기열(Worker Thread Pool · Accept Queue): Tomcat 이 요청을 받아 처리하기까지](notes/tech/server/2026-11-19-tomcat-thread-pool-accept-queue.md) |
 | vLLM | PagedAttention 으로 KV 캐시를 작은 블록 단위로 관리하는 오픈소스 언어 모델 서빙 엔진입니다. | [KV 캐시(KV Cache): 문맥이 길어질수록 GPU 메모리가 줄어드는 이유](notes/tech/ai-ml/2026-11-26-kv-cache-gpu-memory.md) |
 | 가비지 컬렉션(Garbage Collection) | JVM 같은 런타임이 쓰지 않는 메모리를 회수하는 작업으로, 이 동안 애플리케이션 스레드가 잠시 멈출 수 있습니다. | [펜싱 토큰(Fencing Token) — 락이 만료된 뒤 늦게 도착한 쓰기 막기](notes/tech/architecture/2026-11-12-fencing-token.md) |
 | 가상 스레드(Virtual Thread) | Java 21 부터 정식 기능이 된, 운영체제 스레드보다 훨씬 가볍게 많이 만들 수 있는 JVM 관리 스레드입니다. | [작업 스레드 풀과 연결 대기열(Worker Thread Pool · Accept Queue): Tomcat 이 요청을 받아 처리하기까지](notes/tech/server/2026-11-19-tomcat-thread-pool-accept-queue.md) · [가상 스레드(Virtual Thread)와 고정(Pinning): 적은 OS 스레드로 많은 요청을 기다리게 하기](notes/tech/language/2026-11-25-virtual-threads-and-pinning.md) |
 | 고정(Pinning) | 가상 스레드가 블로킹되어도 캐리어 스레드에서 내려오지 못하고 그 스레드를 붙잡은 상태입니다. | [가상 스레드(Virtual Thread)와 고정(Pinning): 적은 OS 스레드로 많은 요청을 기다리게 하기](notes/tech/language/2026-11-25-virtual-threads-and-pinning.md) |
+| 그레이스풀 셧다운(Graceful Shutdown) | 새 요청을 막고 처리 중인 요청을 마친 뒤 프로세스를 끝내는 종료 방식입니다. | [그레이스풀 셧다운(Graceful Shutdown): 배포 중에 처리 중인 요청을 끊지 않고 서버 내리기](notes/tech/service-operations/2026-11-27-graceful-shutdown.md) |
 | 그룹 질의 어텐션(GQA, Grouped-Query Attention) | 여러 질의 헤드가 키·값 헤드 하나를 함께 써서 키·값 헤드 수를 줄이는 어텐션 방식입니다. | [KV 캐시(KV Cache): 문맥이 길어질수록 GPU 메모리가 줄어드는 이유](notes/tech/ai-ml/2026-11-26-kv-cache-gpu-memory.md) |
 | 깨지는 변경(Breaking Change) | 컬럼 삭제나 자료형 변경처럼 기존 소비자가 고치지 않으면 실패하게 되는 변경입니다. | [데이터 계약(Data Contract) — 데이터를 넘기는 쪽과 받는 쪽의 약속](notes/domain/data-contracts/2026-11-11-data-contract.md) |
 | 네이티브 메모리 추적(NMT, Native Memory Tracking) | JVM 이 내부 영역별로 쓰는 네이티브 메모리를 집계해 jcmd 로 보여 주는 진단 기능입니다. | [컨테이너 메모리 제한(Container Memory Limit)과 JVM: 힙 밖 메모리(Off-Heap Memory)까지 계산해야 OOM Kill 을 피한다](notes/tech/system/2026-11-24-container-memory-limit-jvm-off-heap.md) |
@@ -68,6 +72,7 @@
 | 시점 복구(Point-in-Time Recovery) | PITR 이라고 줄여 쓰며, 기본 백업에 변경 기록을 원하는 시각까지 재생해 그 시각의 상태로 되돌리는 복구 방식입니다. | [복구 시간 목표 · 복구 시점 목표(RTO · RPO, Recovery Time · Point Objective) — 얼마나 빨리, 어디까지 되살릴지 정하기](notes/tech/incident-response/2026-11-16-rto-rpo.md) |
 | 실행(Run) | 작업이 한 번 돈 기록으로, 시작 · 완료 · 실패 같은 상태를 가집니다. | [데이터 계보(Data Lineage) — 숫자가 어디서 왔는지 거슬러 찾기](notes/domain/data-quality-lineage/2026-11-13-data-lineage.md) |
 | 어텐션(Attention) | 새 토큰이 앞 토큰들 가운데 어느 것을 얼마나 참고할지 계산하는 트랜스포머의 핵심 층입니다. | [KV 캐시(KV Cache): 문맥이 길어질수록 GPU 메모리가 줄어드는 이유](notes/tech/ai-ml/2026-11-26-kv-cache-gpu-memory.md) |
+| 엔드포인트 슬라이스(EndpointSlice) | Kubernetes 서비스가 요청을 보낼 파드 주소 목록을 담는 객체입니다. | [그레이스풀 셧다운(Graceful Shutdown): 배포 중에 처리 중인 요청을 끊지 않고 서버 내리기](notes/tech/service-operations/2026-11-27-graceful-shutdown.md) |
 | 연결 대기열(Accept Queue) | 운영체제가 연결 수립을 끝냈지만 서버 프로그램이 아직 받아 가지 않은 연결을 쌓아 두는 자리입니다. | [작업 스레드 풀과 연결 대기열(Worker Thread Pool · Accept Queue): Tomcat 이 요청을 받아 처리하기까지](notes/tech/server/2026-11-19-tomcat-thread-pool-accept-queue.md) |
 | 영속성 컨텍스트(Persistence Context) | JPA 가 읽어 온 엔티티를 기억하고 변경을 추적하는 작업 공간입니다. | [요청 끝까지 열린 영속성 컨텍스트(OSIV, Open Session in View): Spring 이 DB 커넥션을 오래 잡는 이유](notes/tech/framework/2026-11-23-open-session-in-view.md) |
 | 온톨로지(Ontology) | 어떤 분야의 개념과 개념 사이 관계를 정해 둔 체계로, 여기서는 업무 용어의 승인된 의미를 담습니다. | [시맨틱 레이어(Semantic Layer) — 지표 정의를 한 곳에 두기](notes/domain/semantic-layer/2026-11-10-semantic-layer.md) |
@@ -80,7 +85,9 @@
 | 적용성 조건(Applicability) | 고객이 이미 가진 상품처럼 지금 상황에 맞지 않는 후보를 제외하는 조건입니다. | [다음 최선 행동(Next Best Action) — 걸러내기와 점수 매기기로 지금 할 제안 하나 고르기](notes/domain/recommendation-systems/2026-11-17-next-best-action.md) |
 | 적합성 조건(Suitability) | 고객에게 실제로 도움이 되는 제안인지를 보고 맞지 않는 후보를 제외하는 조건입니다. | [다음 최선 행동(Next Best Action) — 걸러내기와 점수 매기기로 지금 할 제안 하나 고르기](notes/domain/recommendation-systems/2026-11-17-next-best-action.md) |
 | 접촉 정책(Contact Policy) | 노출 · 클릭 · 무시 횟수를 기간별로 세어 같은 행동을 일정 기간 보이지 않게 하는 규칙입니다. | [다음 최선 행동(Next Best Action) — 걸러내기와 점수 매기기로 지금 할 제안 하나 고르기](notes/domain/recommendation-systems/2026-11-17-next-best-action.md) |
+| 종료 유예 시간(terminationGracePeriodSeconds) | Kubernetes 가 SIGTERM 을 보낸 뒤 SIGKILL 을 보내기까지 기다리는 최대 시간이며 기본값은 30초입니다. | [그레이스풀 셧다운(Graceful Shutdown): 배포 중에 처리 중인 요청을 끊지 않고 서버 내리기](notes/tech/service-operations/2026-11-27-graceful-shutdown.md) |
 | 죽은 튜플(Dead Tuple) | 지워졌고 어떤 트랜잭션에게도 더 이상 보이지 않아 회수할 수 있는 행 버전입니다. | [다중 버전 동시성 제어(MVCC, Multi-Version Concurrency Control) 와 VACUUM: PostgreSQL 에 죽은 튜플(Dead Tuple)이 쌓이는 이유](notes/tech/database/2026-11-20-postgresql-mvcc-vacuum-dead-tuples.md) |
+| 준비 상태 프로브(Readiness Probe) | 컨테이너가 지금 요청을 받을 수 있는지 Kubernetes 가 주기적으로 묻는 검사입니다. | [그레이스풀 셧다운(Graceful Shutdown): 배포 중에 처리 중인 요청을 끊지 않고 서버 내리기](notes/tech/service-operations/2026-11-27-graceful-shutdown.md) |
 | 준비된 문장(Prepared Statement) | 한 번 파싱 · 계획한 문장을 값만 바꿔 여러 번 실행하는 방식입니다. | [대량 적재(Bulk Loading) — PostgreSQL 에 수백만 행을 빠르게 넣기](notes/tech/high-volume-processing/2026-11-18-bulk-loading.md) |
 | 중재(Arbitration) | 걸러 내기를 통과한 후보에 우선순위 점수를 매겨 맨 위 행동을 고르는 단계입니다. | [다음 최선 행동(Next Best Action) — 걸러내기와 점수 매기기로 지금 할 제안 하나 고르기](notes/domain/recommendation-systems/2026-11-17-next-best-action.md) |
 | 지연 로딩(Lazy Loading) | 연관된 데이터를 처음 실제로 쓰는 순간에 쿼리를 보내 읽는 방식입니다. | [요청 끝까지 열린 영속성 컨텍스트(OSIV, Open Session in View): Spring 이 DB 커넥션을 오래 잡는 이유](notes/tech/framework/2026-11-23-open-session-in-view.md) |
